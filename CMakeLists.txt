@@ -18,7 +18,7 @@ ADD_CUSTOM_COMMAND(
         OUTPUTS ${PARSER_DIR}/lexer.cpp
         DEPENDS ${SRC_DIR}/lexer.l
         COMMAND reflex
-        ARGS -o ${PARSER_DIR}/lexer.cpp --header-file=${PARSER_DIR}/lexer.h ${CMAKE_CURRENT_LIST_DIR}/src/lexer.l)
+        ARGS -o ${PARSER_DIR}/lexer.cpp --header-file=${PARSER_DIR}/lexer.h ${CMAKE_CURRENT_LIST_DIR}/src/lexer.l --yy)
         
 SET(FLEX_lexer_OUTPUTS ${CMAKE_BINARY_DIR}/lexer.cpp)
 
@@ -26,5 +26,6 @@ SET(FLEX_lexer_OUTPUTS ${CMAKE_BINARY_DIR}/lexer.cpp)
 
 add_executable(verbose "${SRC_DIR}/main.cpp" "${LEXER_OUT}")
 target_include_directories(verbose PRIVATE "${PARSER_DIR}")
+target_include_directories(verbose PRIVATE "${REFLEX_DIR}/../include")
 add_dependencies(verbose lexer)
 target_link_libraries(verbose ${reflex_lib})
