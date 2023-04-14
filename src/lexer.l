@@ -1,4 +1,5 @@
-%{
+%option noyywrap
+%top{
 #include <iostream>
 %}
 
@@ -7,8 +8,7 @@ WORD {LETTER}{3,}
 
 %%
 {WORD} {
-    if(yyleng == 5) std::cout << "found 5\n";
+    if(size() == 4) std::cout << "found 4\n";
 }
 %%
 
-int yywrap(){std::cout << "wrap\n";}
