@@ -9,6 +9,8 @@
 #define vprint(text) {std::cout << #text << '\n';}
 // Macro that signifies a token has been found, to be replaced with returns for Bison
 #define ret(token) {std::cout << "Found token " << #token << '\n';}
+// Macro that signifies a token with an assigned value has been found
+#define retv(token,val) {std::cout << "Found token " << #token << " Value " << val << '\n';}
 %}
 
 /* States */
@@ -34,7 +36,11 @@ ENDL \r?\n
 }
 
 /* Literals section (ex. strings in "", or 1.5f) */
-
+/*-float- //at least 1 digit after the decimal point is required 
+          so it is not mistaken for the instruction terminator */
+\<(\d*)\.(\d+)(?:f?)\> {retv(FLOAT, std::stod(text()))} 
+/*-int- //no unary minus atm */
+\<(\d+)\> {retv(INT, std::stoi(text()))}
 
 /* Keyword section */
 \<begin\> {ret(BEGIN)}

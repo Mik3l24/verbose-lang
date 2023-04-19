@@ -17,13 +17,12 @@ procedure begin
     end
 
     constant Float named pi assigned 3.14f.
-    variable Float named 3var assigned 0.
-    while 3var <= pi * 4 end
+    variable Float named 3var assigned 40.114.
+    while 3var <= pi * 40 end
     procedure begin
         3var assigned 3var + pi/2.
     end
 
-    
 
     return RETURN_CODES's SUCCESS.
 end rem procedure main

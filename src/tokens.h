@@ -4,7 +4,8 @@
 enum Token
 {
     TOKEN, //INVALID
-    BEGIN, END,
+    BEGIN, END, 
+    FLOAT, INT,
     
 };
 
