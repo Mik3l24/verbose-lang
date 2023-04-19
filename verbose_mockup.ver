@@ -1,0 +1,36 @@
+include library standard
+
+function returning int named main
+        parameters begin 
+            constant String named arguments
+        end rem parameters
+procedure begin
+    variable Int named x assigned 55. rem musi być sprawdzanie, czy np. po named jest nazwa 
+    x assigned 2 * (x - 32).
+    call print parameters x end.
+
+    x assigned call read.
+
+    if x = 7 and true end
+    procedure begin
+        call print parameters "x ma dobrą wartość" end. 
+    end
+
+    constant Float named pi assigned 3.14f.
+    variable Float named 3var assigned 0.
+    while 3var <= pi * 4 end
+    procedure begin
+        3var assigned 3var + pi/2.
+    end
+
+    
+
+    return RETURN_CODES's SUCCESS.
+end rem procedure main
+
+function named lambdaExample
+procedure begin
+    variable Function named func assigned function returning int parameters a end procedure return a + 1 end.
+end
+
+

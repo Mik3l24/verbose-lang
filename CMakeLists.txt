@@ -1,5 +1,5 @@
 include("CMakeLists.txt.user")
-cmake_minimum_required(VERSION 3.26)
+cmake_minimum_required(VERSION 3.25)
 
 project(verbose LANGUAGES CXX)
 
