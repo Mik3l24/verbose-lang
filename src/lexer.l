@@ -5,29 +5,32 @@
 // List of possible tokens
 #include "../src/tokens.h"
 
+// Print for debugging
+#define vprint(text) {std::cout << #text << '\n';}
 // Macro that signifies a token has been found, to be replaced with returns for Bison
 #define ret(token) {std::cout << "Found token " << #token << '\n';}
 %}
 
+/* States */
 %x IN_COMMENT_INLINE
 
-LETTER [a-zA-ZąćęłńóśżźĄĆĘŃÓŁŚŻŹ]
-WORD {LETTER}{3,}
-
+/* Utility patterns */
 ENDL \r?\n
-COMMENT_INLINE (\/\/|#).*?({ENDL}|<<EOF>>)
 
 %%
 /* Comment section */
 \<rem\> {
-    push_state(IN_COMMENT_INLINE); std::cout << "comment\n";
+    push_state(IN_COMMENT_INLINE); vprint(comment);
+}
+\/\/|# {
+    push_state(IN_COMMENT_INLINE); vprint(comment);
 }
 <IN_COMMENT_INLINE>[^\n]*
 <IN_COMMENT_INLINE>{ENDL} {
-    pop_state(); std::cout << "comment end\n";
+    pop_state(); vprint(comment end);
 }
-{COMMENT_INLINE} {
-    std::cout << "comment\n";
+<IN_COMMENT_INLINE><<EOF>> {
+    pop_state(); vprint(comment end);
 }
 
 /* Literals section (ex. strings in "", or 1.5f) */
@@ -44,9 +47,8 @@ COMMENT_INLINE (\/\/|#).*?({ENDL}|<<EOF>>)
 /* Identifiers section */
 
 
-/* Testing section */
-{WORD} {
-    if(size() == 4) std::cout << "found 4\n";
-}
+/* Other */
+
+
 %%
 

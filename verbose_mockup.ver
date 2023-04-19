@@ -1,6 +1,6 @@
 include library standard
 
-function returning int named main
+function returning Int named main
         parameters begin 
             constant String named arguments
         end rem parameters
@@ -30,7 +30,8 @@ end rem procedure main
 
 function named lambdaExample
 procedure begin
-    variable Function named func assigned function returning int parameters a end procedure return a + 1 end.
+    variable Function named func assigned function returning Int parameters a end procedure return a + 1 end.
 end
 
 
+//
