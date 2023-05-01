@@ -18,14 +18,15 @@
 
 /* Utility patterns */
 ENDL \r?\n
-
+SYMBOL [\.,\"'\+\-\*\/\^\|\(\)=<>!%&\\\[\]\{\}]
+BOUNDARY [\p{Space}||{SYMBOL}]
 
 %%
 /* Comment section */
-\<rem\> {
+"rem" {
     push_state(IN_COMMENT_INLINE); vprint("comment");
 }
-\/\/|# {
+("//"|#)(?=.*) {
     push_state(IN_COMMENT_INLINE); vprint("comment");
 }
 <IN_COMMENT_INLINE>[^\n]*
@@ -39,13 +40,13 @@ ENDL \r?\n
 /* Literals section (ex. strings in "", or 1.5f) */
 /*-float- //at least 1 digit after the decimal point is required 
           so it is not mistaken for the instruction terminator */
-\<(\d*)\.(\d+)(?:f?)\> {retv(LIT_FLOAT, std::stod(text()))} 
+(\d*)\.(\d+)(?:f?)(?=\P{Alnum}*) {retv(LIT_FLOAT, std::stod(text()))} 
 /*-int- //no unary minus atm */
-\<(\d+)\> {retv(LIT_INT, std::stoi(text()))}
+(\d+)(?=\P{Alnum}*) {retv(LIT_INT, std::stoi(text()))}
 
 /* Keyword section */
-\<begin\> {ret(KEY_BEGIN)}
-\<end\> {ret(KEY_END)}
+"begin" {ret(KEY_BEGIN)}
+"end" {ret(KEY_END)}
 
 
 /* Symbols/operators section */
