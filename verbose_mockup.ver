@@ -1,34 +1,60 @@
 include library standard
 
-function returning Int named main
-        parameters begin 
-            constant String named arguments
-        end rem parameters
-procedure begin
+enum named RETURN_CODE of Int
+values
+    SUCCESS,
+    ERROR
+end
+
+function returning Bool named isNotEqual
+parameters
+    variable UInt16 named x,
+    variable UInt16 named y
+end
+procedure
+    return x != y.
+end
+
+function returning RETURN_CODE named main
+parameters  
+    constant String named arguments
+end rem parameters
+procedure 
     variable Int named x assigned 55. rem musi być sprawdzanie, czy np. po named jest nazwa 
     x assigned 2 * (x - 32).
     call print parameters x end.
 
     x assigned call read.
 
-    if x = 7 and true end
-    procedure begin
+    //Condition
+    if x = 7 and call isNotEqual parameters 0xA0F9, 0b1001000010101111 end //end belongs to 'parameters', not 'if'
+    procedure
         call print parameters "x ma dobrą wartość" end. 
     end
 
+    //while loop
     constant Float named pi assigned 3.14f.
-    variable Float named 3var assigned 40.114.
-    while 3var <= pi * 40 end
-    procedure begin
+    variable Float named 3var assigned 40.114. //variables beggining with numbers are permitted. Doubles cannot end with the decimal point
+    while 3var <= pi * 40
+    procedure
         3var assigned 3var + pi/2.
     end
 
 
-    return RETURN_CODES's SUCCESS.
+
+    variable Array size x of UInt named arr. //Syntax of initializing size of an array needs to be discussed
+    for variable UInt named i assigned 1 while i < x by i++
+    procedure
+        arr at i end assigned i.
+    end
+
+    call print parameters arr at x - 1 end + 1 end // at-end can enclose more complex operations
+
+    return RETURN_CODE's SUCCESS. // 's is the access operator, replaces . and :: from C++ 
 end rem procedure main
 
 function named lambdaExample
-procedure begin
+procedure 
     variable Function named func assigned function returning Int parameters a end procedure return a + 1 end.
 end
 
