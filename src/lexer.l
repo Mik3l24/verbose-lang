@@ -1,6 +1,13 @@
 %option noyywrap
 %top{
 #include <iostream>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+extern int yylex();
+extern int yylineno;
+extern char* yytext;
 
 // List of possible tokens
 #include "../src/tokens.h"
@@ -13,6 +20,9 @@
 #define retv(token,val) {std::cout << "Found token " << #token << " Value " << val << '\n';}
 %}
 
+
+
+
 /* States */
 %x IN_COMMENT_INLINE
 
@@ -20,6 +30,9 @@
 ENDL \r?\n
 SYMBOL [\.,\"'\+\-\*\/\^\|\(\)=<>!%&\\\[\]\{\}]
 BOUNDARY [\p{Space}||{SYMBOL}]
+DIGIT   [0-9]
+LETTER  [A-Za-z_]
+ALNUM   [A-Za-z0-9_]
 
 %%
 /* Comment section */
@@ -48,17 +61,52 @@ BOUNDARY [\p{Space}||{SYMBOL}]
 "begin" {ret(KEY_BEGIN)}
 "end" {ret(KEY_END)}
 
-
 /* Symbols/operators section */
+[+][?=[[:space:][:alnum:]|{SYMBOL}]] {return OP_ADD;}
+[-][?=[[:space:][:alnum:]|{SYMBOL}]] {return OP_SUB;}
+[*][?=[[:space:][:alnum:]|{SYMBOL}]] {return OP_MUL;}
+[/][?=[[:space:][:alnum:]|{SYMBOL}]] {return OP_DIV;}
 
 
 /* Identifiers section */
+/* [A-Za-z_][\w-]*(?=[\p{Space}||{SYMBOL}]) {yylval.strval = strdup(yytext); return IDENTIFIER;} */
+{LETTER}{ALNUM}* {yylval.strval = strdup(yytext); return IDENTIFIER;}
+
+/* Literals section */
+{DIGIT}+ {yylval.intval = atoi(yytext); return LITERAL_INT;}
 
 
 /* Other */
-/*Ignore whitespace*/
-\p{Space}
-/*Any other non-whitespace chars are an unknown token, lexical error*/
-\P{Space}+ {std::cout << "Unknown token: " << text() << '\n';}
+
 %%
 
+/* int main(int argc, char** argv) {
+    int token;
+    while(token = yylex()) {
+        switch(token) {
+            case OP_ADD:
+                printf("Operator: +\n");
+                break;
+            case OP_SUB:
+                printf("Operator: -\n");
+                break;
+            case OP_MUL:
+                printf("Operator: *\n");
+                break;
+            case OP_DIV:
+                printf("Operator: /\n");
+                break;
+            case IDENTIFIER:
+                printf("Identifier: %s\n", yylval.strval);
+                free(yylval.strval);
+                break;
+            case LITERAL_INT:
+                printf("Literal: %d\n", yylval.intval);
+                break;
+            default:
+                printf("Unknown token\n");
+                break;
+        }
+    }
+    return 0;
+} */
