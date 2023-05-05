@@ -5,9 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-extern int yylex();
-extern int yylineno;
-extern char* yytext;
+
 
 // List of possible tokens
 #include "../src/tokens.h"
@@ -28,11 +26,12 @@ extern char* yytext;
 
 /* Utility patterns */
 ENDL \r?\n
-SYMBOL [\.,\"'\+\-\*\/\^\|\(\)=<>!%&\\\[\]\{\}]
+SYMBOL [\.,\"'\+\-\*\/\^\|\(\)=<>!%&\\\[\]\{\}\(\)\?;:]
 BOUNDARY [\p{Space}||{SYMBOL}]
-DIGIT   [0-9]
-LETTER  [A-Za-z_]
-ALNUM   [A-Za-z0-9_]
+AFTER_SYMBOL (?=[[:space:][:alnum:]|{SYMBOL}])
+AFTER_BOUNDARY (?=[[:space:][:alnum:]|{BOUNDARY}])
+
+
 
 %%
 /* Comment section */
@@ -57,56 +56,98 @@ ALNUM   [A-Za-z0-9_]
 /*-int- //no unary minus atm */
 (\d+)(?=\P{Alnum}*) {retv(LIT_INT, std::stoi(text()))}
 
-/* Keyword section */
+/* Keyword section    */
 "begin" {ret(KEY_BEGIN)}
 "end" {ret(KEY_END)}
+"include" {ret(KEY_END)}
+"library" {ret(KEY_END)}
+"enum" {ret(KEY_END)}
+"named" {ret(KEY_END)}
+"RETURN_CODE" {ret(KEY_END)}
+"of" {ret(KEY_END)}
+"Int" {ret(KEY_END)}
+"SUCCESS" {ret(KEY_END)}
+"function" {ret(KEY_END)}
+"Function" {ret(KEY_END)}
+"returning" {ret(KEY_END)}
+"Bool" {ret(KEY_END)}
+"isNotEqual" {ret(KEY_END)}
+"String" {ret(KEY_END)}
+"variable" {ret(KEY_END)}
+"UInt16" {ret(KEY_END)}
+"procedure" {ret(KEY_END)}
+"return" {ret(KEY_END)}
+"!=" {ret(KEY_END)}
+"main" {ret(KEY_END)}
+"parameters" {ret(KEY_END)}
+"constant" {ret(KEY_END)}
+"arguments" {ret(KEY_END)}
+"assigned" {ret(KEY_END)}
+"print" {ret(KEY_END)}
+"call" {ret(KEY_END)}
+"read" {ret(KEY_END)}
+"if" {ret(KEY_END)}
+"Float" {ret(KEY_END)}
+"while" {ret(KEY_END)}
+"size" {ret(KEY_END)}
+"Array" {ret(KEY_END)}
+"by" {ret(KEY_END)}
+"UInt" {ret(KEY_END)}
+"for" {ret(KEY_END)}
+"at" {ret(KEY_END)}
+"++" {ret(KEY_END)}
+"RETURN_CODE's" {ret(KEY_END)}
+"values" {ret(KEY_END)}
+"ERROR" {ret(KEY_END)}
+"<=" {ret(KEY_END)}
+
 
 /* Symbols/operators section */
-[+][?=[[:space:][:alnum:]|{SYMBOL}]] {return OP_ADD;}
-[-][?=[[:space:][:alnum:]|{SYMBOL}]] {return OP_SUB;}
-[*][?=[[:space:][:alnum:]|{SYMBOL}]] {return OP_MUL;}
-[/][?=[[:space:][:alnum:]|{SYMBOL}]] {return OP_DIV;}
+"+"{AFTER_SYMBOL} {ret(OP_ADD)}
+"-"{AFTER_SYMBOL} {ret(OP_SUB)}
+"*"{AFTER_SYMBOL} {ret(OP_MUL)}
+"/"{AFTER_SYMBOL} {ret(OP_DIV)}
+"^"{AFTER_SYMBOL} {ret(OP_H)}
+"."{AFTER_SYMBOL} {ret(KEY_TERMINATOR)}
+"|"{AFTER_SYMBOL} {ret(KEY_TERMINATOR)}
+"?"{AFTER_SYMBOL} {ret(KEY_TERMINATOR)}
+"/"{AFTER_SYMBOL} {ret(KEY_TERMINATOR)}
+""{AFTER_SYMBOL} {ret(KEY_TERMINATOR)}
+"="{AFTER_SYMBOL} {ret(KEY_TERMINATOR)}
+">"{AFTER_SYMBOL} {ret(KEY_TERMINATOR)}
+"<"{AFTER_SYMBOL} {ret(KEY_TERMINATOR)}
+";"{AFTER_SYMBOL} {ret(KEY_TERMINATOR)}
+":"{AFTER_SYMBOL} {ret(KEY_TERMINATOR)}
+"'"{AFTER_SYMBOL} {ret(KEY_TERMINATOR)}
+"("{AFTER_SYMBOL} {ret(KEY_TERMINATOR)}
+")"{AFTER_SYMBOL} {ret(KEY_TERMINATOR)}
+"}"{AFTER_SYMBOL} {ret(KEY_TERMINATOR)}
+"{"{AFTER_SYMBOL} {ret(KEY_TERMINATOR)}
+"["{AFTER_SYMBOL} {ret(KEY_TERMINATOR)}
+"]"{AFTER_SYMBOL} {ret(KEY_TERMINATOR)}
+","{AFTER_SYMBOL} {ret(KEY_TERMINATOR)}
+"!"{AFTER_SYMBOL} {ret(KEY_TERMINATOR)}
+"#"{AFTER_SYMBOL} {ret(KEY_TERMINATOR)}
+"&"{AFTER_SYMBOL} {ret(KEY_TERMINATOR)}
+"%"{AFTER_SYMBOL} {ret(KEY_TERMINATOR)}
+"$"{AFTER_SYMBOL} {ret(KEY_TERMINATOR)}
 
 
 /* Identifiers section */
-/* [A-Za-z_][\w-]*(?=[\p{Space}||{SYMBOL}]) {yylval.strval = strdup(yytext); return IDENTIFIER;} */
-{LETTER}{ALNUM}* {yylval.strval = strdup(yytext); return IDENTIFIER;}
-
-/* Literals section */
-{DIGIT}+ {yylval.intval = atoi(yytext); return LITERAL_INT;}
-
+/* [A-Za-z_][\w-]*(?=[\p{Space}||{SYMBOL}]) {yylval.strval = strdup(yytext); return IDENTIFIER;} 
+Znaleznieie indetyfikatorów, aflanumeryczne > 1*/
 
 /* Other */
+/*Ignore whitespace*/
+/* {ENDL} {vprint("endline");}
+{LETTER}{ALNUM}* {yylval.strval = strdup(text()); return IDENTIFIER;}
+
+/* Literals section */
+/* {DIGIT}+ {yylval.intval = atoi(text()); return LITERAL_INT;} */ 
+
+\p{Space}
+/*Any other non-whitespace chars are an unknown token, lexical error*/
+\P{Space}+ {std::cout << "Unknown token: " << text() << '\n';}
 
 %%
 
-/* int main(int argc, char** argv) {
-    int token;
-    while(token = yylex()) {
-        switch(token) {
-            case OP_ADD:
-                printf("Operator: +\n");
-                break;
-            case OP_SUB:
-                printf("Operator: -\n");
-                break;
-            case OP_MUL:
-                printf("Operator: *\n");
-                break;
-            case OP_DIV:
-                printf("Operator: /\n");
-                break;
-            case IDENTIFIER:
-                printf("Identifier: %s\n", yylval.strval);
-                free(yylval.strval);
-                break;
-            case LITERAL_INT:
-                printf("Literal: %d\n", yylval.intval);
-                break;
-            default:
-                printf("Unknown token\n");
-                break;
-        }
-    }
-    return 0;
-} */
