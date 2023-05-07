@@ -29,7 +29,7 @@ procedure
     //Condition
     if x = 7 and call isNotEqual parameters 0xA0F9, 0b1001000010101111 end //end belongs to 'parameters', not 'if'
     procedure
-        call print parameters "x ma dobrą wartość" end. 
+        call print parameters "\"x\" ma dobrą wartość" end. 
     end
 
     //while loop
