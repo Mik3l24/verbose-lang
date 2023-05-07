@@ -21,10 +21,10 @@ parameters
 end rem parameters
 procedure 
     variable Int named x assigned 55. rem musi być sprawdzanie, czy np. po named jest nazwa 
-    x assigned 2 * (x - 32).
+    assign x value 2 * (x - 32).
     call print parameters x end.
 
-    x assigned call read.
+    assign x value call read.
 
     //Condition
     if x = 7 and call isNotEqual parameters 0xA0F9, 0b1001000010101111 end //end belongs to 'parameters', not 'if'
@@ -34,18 +34,18 @@ procedure
 
     //while loop
     constant Float named pi assigned 3.14f.
-    variable Float named 3var assigned 40.114. //variables beggining with numbers are permitted. Doubles cannot end with the decimal point
+    variable Float named 3var assigned 40.114. //variables beginning with numbers are permitted. Doubles cannot end with the decimal point
     while 3var <= pi * 40
     procedure
-        3var assigned 3var + pi/2.
+        assign 3var value 3var + pi/2.
     end
 
 
 
     variable Array size x of UInt named arr. //Syntax of initializing size of an array needs to be discussed
-    for variable UInt named i assigned 1 while i < x by i++
+    for variable UInt named i assigned 1 by i++ while i < x 
     procedure
-        arr at i end assigned i.
+        assign arr at i end value i.
     end
 
     call print parameters arr at x - 1 end + 1 end // at-end can enclose more complex operations

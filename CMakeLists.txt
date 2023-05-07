@@ -8,7 +8,7 @@ set(PARSER_DIR "${CMAKE_CURRENT_BINARY_DIR}")
 #set(PROJECT_SOURCE_DIR "${PROJECT_SOURCE_DIR}.../src")
 
 #find_package(FLEX 2.6 REQUIRED)
-find_library(reflex_lib reflex REQUIRED HINTS "${REFLEX_DIR}")
+find_library(reflex_lib reflex_lib REQUIRED HINTS "${REFLEX_DIR}")
 
 set(LEXER_OUT "${PARSER_DIR}/lexer.cpp")
 
