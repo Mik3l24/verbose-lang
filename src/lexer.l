@@ -52,9 +52,14 @@ AFTER_BOUNDARY (?=[[:space:][:alnum:]|{BOUNDARY}])
 /* Literals section (ex. strings in "", or 1.5f) */
 /*-float- //at least 1 digit after the decimal point is required 
           so it is not mistaken for the instruction terminator */
-(\d*)\.(\d+)(?:f?)(?=\P{Alnum}*) {retv(LIT_FLOAT, std::stod(text()))} 
+/* (\d*)\.(\d+)(?:f?)(?=\P{Alnum}*) {retv(LIT_FLOAT, std::stod(text()))} 
 /*-int- //no unary minus atm */
-(\d+)(?=\P{Alnum}*) {retv(LIT_INT, std::stoi(text()))}
+/* (\d+)(?=\P{Alnum}*) {retv(LIT_INT, std::stoi(text()))} */ 
+
+(\d).(\d+)(?:f?)(?=\P{Alnum}) {retv(LIT_FLOAT, std::stod(text()))}
+/*-int- //no unary minus atm */
+(\d+)(?=\P{Alnum}) {retv(LIT_INT, std::stoi(text()))}
+{SYMBOL} {retv(LIT_STRING, text().substr(1, text().size() - 2))}
 
 /* Keyword section    */
 "begin" {ret(KEY_BEGIN)}
@@ -145,9 +150,18 @@ Znaleznieie indetyfikatorów, aflanumeryczne > 1*/
 /* Literals section */
 /* {DIGIT}+ {yylval.intval = atoi(text()); return LITERAL_INT;} */ 
 
-\p{Space}
-/*Any other non-whitespace chars are an unknown token, lexical error*/
-\P{Space}+ {std::cout << "Unknown token: " << text() << '\n';}
+
+/* Keywords section */
+
+/* Match whitespace */
+\p{Space}+ { }
+
+/* Match any other non-whitespace chars with length > 1 */
+[^[:space:]]{2,1000} {std::cout << "Token with more than one symbol: " << text() << '\n';}
+
+/* Match any other non-whitespace chars with length > 1 */
+[^[:space:]]{1,1} {std::cout << "Token with one symbol: " << text() << '\n';}
+/* Any other non-whitespace chars are an unknown token, lexical error*/
 
 %%
 
