@@ -16,6 +16,8 @@
 #define ret(token) {std::cout << "Found token " << #token << '\n';}
 // Macro that signifies a token with an assigned value has been found
 #define retv(token,val) {std::cout << "Found token " << #token << " Value " << val << '\n';}
+
+
 %}
 
 
@@ -68,22 +70,12 @@ AFTER_BOUNDARY (?=[[:space:][:alnum:]|{BOUNDARY}])
 "library" {ret(KEY_END)}
 "enum" {ret(KEY_END)}
 "named" {ret(KEY_END)}
-"RETURN_CODE" {ret(KEY_END)}
 "of" {ret(KEY_END)}
-"Int" {ret(KEY_END)}
-"SUCCESS" {ret(KEY_END)}
 "function" {ret(KEY_END)}
-"Function" {ret(KEY_END)}
 "returning" {ret(KEY_END)}
-"Bool" {ret(KEY_END)}
-"isNotEqual" {ret(KEY_END)}
-"String" {ret(KEY_END)}
 "variable" {ret(KEY_END)}
-"UInt16" {ret(KEY_END)}
 "procedure" {ret(KEY_END)}
 "return" {ret(KEY_END)}
-"!=" {ret(KEY_END)}
-"main" {ret(KEY_END)}
 "parameters" {ret(KEY_END)}
 "constant" {ret(KEY_END)}
 "arguments" {ret(KEY_END)}
@@ -92,19 +84,14 @@ AFTER_BOUNDARY (?=[[:space:][:alnum:]|{BOUNDARY}])
 "call" {ret(KEY_END)}
 "read" {ret(KEY_END)}
 "if" {ret(KEY_END)}
-"Float" {ret(KEY_END)}
 "while" {ret(KEY_END)}
 "size" {ret(KEY_END)}
-"Array" {ret(KEY_END)}
 "by" {ret(KEY_END)}
-"UInt" {ret(KEY_END)}
 "for" {ret(KEY_END)}
 "at" {ret(KEY_END)}
-"++" {ret(KEY_END)}
-"RETURN_CODE's" {ret(KEY_END)}
 "values" {ret(KEY_END)}
-"ERROR" {ret(KEY_END)}
-"<=" {ret(KEY_END)}
+
+
 
 
 /* Symbols/operators section */
@@ -136,9 +123,56 @@ AFTER_BOUNDARY (?=[[:space:][:alnum:]|{BOUNDARY}])
 "&"{AFTER_SYMBOL} {ret(KEY_TERMINATOR)}
 "%"{AFTER_SYMBOL} {ret(KEY_TERMINATOR)}
 "$"{AFTER_SYMBOL} {ret(KEY_TERMINATOR)}
+"<="{AFTER_SYMBOL} {ret(KEY_TERMINATOR)}
+"++"{AFTER_SYMBOL} {ret(KEY_TERMINATOR)}
+"!="{AFTER_SYMBOL} {ret(KEY_TERMINATOR)}
+")."{AFTER_SYMBOL} {ret(KEY_TERMINATOR)}
+"i++"{AFTER_SYMBOL} {ret(KEY_TERMINATOR)}
 
 
 /* Identifiers section */
+[A-Za-z_][A-Za-z0-9_]* {ret(IDENTIFIER)}
+"Function" {ret(IDENTIFIER)}
+"Int" {ret(KEY_END)}
+"Float" {ret(KEY_END)}
+"String" {ret(KEY_END)}
+"Bool" {ret(KEY_END)}
+"UInt" {ret(KEY_END)}
+"UInt16" {ret(KEY_END)}
+"RETURN_CODE" {ret(KEY_END)}
+"SUCCESS" {ret(KEY_END)}
+"RETURN_CODE's" {ret(KEY_END)}
+"Function" {ret(KEY_END)}
+"ERROR" {ret(KEY_END)}
+"main" {ret(KEY_END)}
+"Array" {ret(KEY_END)}
+"isNotEqual" {ret(KEY_END)}
+"read." {ret(KEY_END)}
+"print." {ret(KEY_END)}
+"call." {ret(KEY_END)}
+"read." {ret(KEY_END)}
+"y." {ret(KEY_END)}
+"n." {ret(KEY_END)}
+"true" {ret(KEY_END)}
+"false" {ret(KEY_END)}
+"SUCCESS," {ret(KEY_END)}
+"standard" {ret(KEY_END)}
+"library" {ret(KEY_END)}
+"x." {ret(KEY_END)}
+"and" {ret(KEY_END)}
+"0xA0F9," {ret(KEY_END)}
+"0b1001000010101111" {ret(KEY_END)} 
+"x" {ret(KEY_END)}
+"pi" {ret(KEY_END)}
+"3var" {ret(KEY_END)}
+"pi/2." {ret(KEY_END)}
+"arr" {ret(KEY_END)}
+"i." {ret(KEY_END)}
+"SUCCESS." {ret(KEY_END)}
+
+
+
+
 /* [A-Za-z_][\w-]*(?=[\p{Space}||{SYMBOL}]) {yylval.strval = strdup(yytext); return IDENTIFIER;} 
 Znaleznieie indetyfikatorów, aflanumeryczne > 1*/
 
@@ -162,6 +196,12 @@ Znaleznieie indetyfikatorów, aflanumeryczne > 1*/
 /* Match any other non-whitespace chars with length > 1 */
 [^[:space:]]{1,1} {std::cout << "Token with one symbol: " << text() << '\n';}
 /* Any other non-whitespace chars are an unknown token, lexical error*/
+
+
+
+\P{Space}+ {std::cout << "Unknown token: " << text() << '\n';}
+
+
 
 %%
 
