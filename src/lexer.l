@@ -106,26 +106,29 @@ IDENTIFIER_CHARS [\p{Alnum}_]
 "for"{AFTER_ALNUM} {ret(KEY_FOR)}
 "at"{AFTER_ALNUM} {ret(KEY_AT)}
 "values"{AFTER_ALNUM} {ret(KEY_VALUES)}
+"value"{AFTER_ALNUM} {ret(KEY_VALUE)}
 
 
 
 /* Symbols/operators section */
 "<="{AFTER_SYMBOL} {ret(OP_LESS_EQUAL)}
+">="{AFTER_SYMBOL} {ret(OP_GREATER_EQUAL)}
 "++"{AFTER_SYMBOL} {ret(OP_INCREMENT)}
+"--"{AFTER_SYMBOL} {ret(OP_DECREMENT)}
 "!="{AFTER_SYMBOL} {ret(OP_NOT_EQUAL)}
-"+"{AFTER_SYMBOL} {ret(OP_ADD)}
-"-"{AFTER_SYMBOL} {ret(OP_SUB)}
-"*"{AFTER_SYMBOL} {ret(OP_MUL)}
+"+"{AFTER_SYMBOL} {ret(OP_PLUS)}
+"-"{AFTER_SYMBOL} {ret(OP_MINUS)}
+"*"{AFTER_SYMBOL} {ret(OP_MULT)}
 "/"{AFTER_SYMBOL} {ret(OP_DIV)}
-"^"{AFTER_SYMBOL} {ret(OP_H)}
-"."{AFTER_SYMBOL} {ret(OP_PERIOD)}
+"^"{AFTER_SYMBOL} {ret(OP_POWER)}
+"."{AFTER_SYMBOL} {ret(KEY_TERMINATOR)}
 "|"{AFTER_SYMBOL} {ret(OP_PIPE)}
 "="{AFTER_SYMBOL} {ret(OP_EQUAL)}
 ">"{AFTER_SYMBOL} {ret(OP_GREATER)}
 "<"{AFTER_SYMBOL} {ret(OP_LESS)}
 ";"{AFTER_SYMBOL} {ret(OP_SEMICOLON)}
 ":"{AFTER_SYMBOL} {ret(OP_COLON)}
-"'"{AFTER_SYMBOL} {ret(OP_SINGLE_QUOTE)}
+"'s"{AFTER_SYMBOL} {ret(OP_ACCESSOR)}
 "("{AFTER_SYMBOL} {ret(OP_OPEN_PAREN)}
 ")"{AFTER_SYMBOL} {ret(OP_CLOSE_PAREN)}
 "}"{AFTER_SYMBOL} {ret(OP_CLOSE_BRACE)}
@@ -135,12 +138,9 @@ IDENTIFIER_CHARS [\p{Alnum}_]
 ","{AFTER_SYMBOL} {ret(OP_COMMA)}
 "%"{AFTER_SYMBOL} {ret(OP_PERCENT)}
 
-
-
-
-
-
-
+"or"{AFTER_ALNUM} {ret(OP_OR)}
+"and"{AFTER_ALNUM} {ret(OP_AND)}
+"not"{AFTER_ALNUM} {ret(OP_NOT)}
 
 
 /* Identifiers section */
