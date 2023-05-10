@@ -27,6 +27,7 @@ literal_str.clear(); /*probably unnessesary, but for safety in case it doesn't g
 
 
 
+
 /* States */
 %x IN_COMMENT_INLINE
 %x IN_STRING_LITERAL
@@ -35,8 +36,8 @@ literal_str.clear(); /*probably unnessesary, but for safety in case it doesn't g
 ENDL \r?\n
 SYMBOL [\.,\"'\+\-\*\/\^\|\(\)=<>!%&\\\[\]\{\}\(\)\?;:]
 
-AFTER_SYMBOL (?=.*?)
-AFTER_ALNUM (?=[^{IDENTIFIER_CHARS}].*?)
+AFTER_SYMBOL (?=.*)
+AFTER_ALNUM (?=.*)
 IDENTIFIER_CHARS [\p{Alnum}_]
 
 
@@ -79,66 +80,72 @@ IDENTIFIER_CHARS [\p{Alnum}_]
 
 
 /* Keyword section    */
+"begin"{AFTER_ALNUM} {ret(KEY_BEGIN)}
 "end"{AFTER_ALNUM} {ret(KEY_END)}
-"include" {ret(KEY_END)}
-"library" {ret(KEY_END)}
-"enum" {ret(KEY_END)}
-"named" {ret(KEY_END)}
-"of" {ret(KEY_END)}
-"function" {ret(KEY_END)}
-"returning" {ret(KEY_END)}
-"variable" {ret(KEY_END)}
-"procedure" {ret(KEY_END)}
-"return" {ret(KEY_END)}
-"parameters" {ret(KEY_END)}
-"constant" {ret(KEY_END)}
-"arguments" {ret(KEY_END)}
-"assigned" {ret(KEY_END)}
-"call" {ret(KEY_END)}
-"if" {ret(KEY_END)}
-"while" {ret(KEY_END)}
-"size" {ret(KEY_END)}
-"by" {ret(KEY_END)}
-"for" {ret(KEY_END)}
-"at" {ret(KEY_END)}
-"values" {ret(KEY_END)}
-
+"include"{AFTER_ALNUM} {ret(KEY_INCLUDE)}
+"library"{AFTER_ALNUM} {ret(KEY_LIBRARY)}
+"enum"{AFTER_ALNUM} {ret(KEY_ENUM)}
+"named"{AFTER_ALNUM} {ret(KEY_NAMED)}
+"of"{AFTER_ALNUM} {ret(KEY_OF)}
+"function"{AFTER_ALNUM} {ret(KEY_FUNCTION)}
+"returning"{AFTER_ALNUM} {ret(KEY_RETURNING)}
+"variable"{AFTER_ALNUM} {ret(KEY_VARIABLE)}
+"procedure"{AFTER_ALNUM} {ret(KEY_PROCEDURE)}
+"return"{AFTER_ALNUM} {ret(KEY_RETURN)}
+"parameters"{AFTER_ALNUM} {ret(KEY_PARAMETERS)}
+"constant"{AFTER_ALNUM} {ret(KEY_CONSTANT)}
+"arguments"{AFTER_ALNUM} {ret(KEY_ARGUMENTS)}
+"assigned"{AFTER_ALNUM} {ret(KEY_ASSIGNED)}
+"print"{AFTER_ALNUM} {ret(KEY_PRINT)}
+"call"{AFTER_ALNUM} {ret(KEY_CALL)}
+"read"{AFTER_ALNUM} {ret(KEY_READ)}
+"if"{AFTER_ALNUM} {ret(KEY_IF)}
+"while"{AFTER_ALNUM} {ret(KEY_WHILE)}
+"size"{AFTER_ALNUM} {ret(KEY_SIZE)}
+"by"{AFTER_ALNUM} {ret(KEY_BY)}
+"for"{AFTER_ALNUM} {ret(KEY_FOR)}
+"at"{AFTER_ALNUM} {ret(KEY_AT)}
+"values"{AFTER_ALNUM} {ret(KEY_VALUES)}
 
 
 
 /* Symbols/operators section */
+"<="{AFTER_SYMBOL} {ret(OP_LESS_EQUAL)}
+"++"{AFTER_SYMBOL} {ret(OP_INCREMENT)}
+"!="{AFTER_SYMBOL} {ret(OP_NOT_EQUAL)}
 "+"{AFTER_SYMBOL} {ret(OP_ADD)}
 "-"{AFTER_SYMBOL} {ret(OP_SUB)}
 "*"{AFTER_SYMBOL} {ret(OP_MUL)}
 "/"{AFTER_SYMBOL} {ret(OP_DIV)}
 "^"{AFTER_SYMBOL} {ret(OP_H)}
-"."{AFTER_SYMBOL} {ret(KEY_TERMINATOR)}
-"|"{AFTER_SYMBOL} {ret(KEY_TERMINATOR)}
-"?"{AFTER_SYMBOL} {ret(KEY_TERMINATOR)}
-"/"{AFTER_SYMBOL} {ret(KEY_TERMINATOR)}
-""{AFTER_SYMBOL} {ret(KEY_TERMINATOR)}
-"="{AFTER_SYMBOL} {ret(KEY_TERMINATOR)}
-">"{AFTER_SYMBOL} {ret(KEY_TERMINATOR)}
-"<"{AFTER_SYMBOL} {ret(KEY_TERMINATOR)}
-";"{AFTER_SYMBOL} {ret(KEY_TERMINATOR)}
-":"{AFTER_SYMBOL} {ret(KEY_TERMINATOR)}
-"'"{AFTER_SYMBOL} {ret(KEY_TERMINATOR)}
-"("{AFTER_SYMBOL} {ret(KEY_TERMINATOR)}
-")"{AFTER_SYMBOL} {ret(KEY_TERMINATOR)}
-"}"{AFTER_SYMBOL} {ret(KEY_TERMINATOR)}
-"{"{AFTER_SYMBOL} {ret(KEY_TERMINATOR)}
-"["{AFTER_SYMBOL} {ret(KEY_TERMINATOR)}
-"]"{AFTER_SYMBOL} {ret(KEY_TERMINATOR)}
-","{AFTER_SYMBOL} {ret(KEY_TERMINATOR)}
-"%"{AFTER_SYMBOL} {ret(KEY_TERMINATOR)}
-"<="{AFTER_SYMBOL} {ret(KEY_TERMINATOR)}
-"++"{AFTER_SYMBOL} {ret(KEY_TERMINATOR)}
-"!="{AFTER_SYMBOL} {ret(KEY_TERMINATOR)}
+"."{AFTER_SYMBOL} {ret(OP_PERIOD)}
+"|"{AFTER_SYMBOL} {ret(OP_PIPE)}
+"="{AFTER_SYMBOL} {ret(OP_EQUAL)}
+">"{AFTER_SYMBOL} {ret(OP_GREATER)}
+"<"{AFTER_SYMBOL} {ret(OP_LESS)}
+";"{AFTER_SYMBOL} {ret(OP_SEMICOLON)}
+":"{AFTER_SYMBOL} {ret(OP_COLON)}
+"'"{AFTER_SYMBOL} {ret(OP_SINGLE_QUOTE)}
+"("{AFTER_SYMBOL} {ret(OP_OPEN_PAREN)}
+")"{AFTER_SYMBOL} {ret(OP_CLOSE_PAREN)}
+"}"{AFTER_SYMBOL} {ret(OP_CLOSE_BRACE)}
+"{"{AFTER_SYMBOL} {ret(OP_OPEN_BRACE)}
+"["{AFTER_SYMBOL} {ret(OP_OPEN_BRACKET)}
+"]"{AFTER_SYMBOL} {ret(OP_CLOSE_BRACKET)}
+","{AFTER_SYMBOL} {ret(OP_COMMA)}
+"%"{AFTER_SYMBOL} {ret(OP_PERCENT)}
+
+
+
+
+
+
 
 
 
 /* Identifiers section */
-{IDENTIFIER_CHARS}+ {retv(IDENTIFIER, text())}
+{IDENTIFIER_CHARS}+{AFTER_ALNUM} {retv(IDENTIFIER, text())}
+
 
 /* testing/utility */
 /* Match any other non-whitespace chars with length > 1 */
@@ -159,4 +166,3 @@ IDENTIFIER_CHARS [\p{Alnum}_]
 
 
 %%
-
