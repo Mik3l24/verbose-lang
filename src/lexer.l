@@ -32,6 +32,8 @@ SYMBOL [\.,\"'\+\-\*\/\^\|\(\)=<>!%&\\\[\]\{\}\(\)\?;:]
 BOUNDARY [\p{Space}||{SYMBOL}]
 AFTER_SYMBOL (?=[[:space:][:alnum:]|{SYMBOL}])
 AFTER_BOUNDARY (?=[[:space:][:alnum:]|{BOUNDARY}])
+IDENTIFIER [a-zA-Z_][a-zA-Z0-9_]*
+
 
 
 
@@ -132,43 +134,46 @@ AFTER_BOUNDARY (?=[[:space:][:alnum:]|{BOUNDARY}])
 
 /* Identifiers section */
 [A-Za-z_][A-Za-z0-9_]* {ret(IDENTIFIER)}
-"Function" {ret(IDENTIFIER)}
-"Int" {ret(KEY_END)}
-"Float" {ret(KEY_END)}
-"String" {ret(KEY_END)}
-"Bool" {ret(KEY_END)}
-"UInt" {ret(KEY_END)}
-"UInt16" {ret(KEY_END)}
-"RETURN_CODE" {ret(KEY_END)}
-"SUCCESS" {ret(KEY_END)}
-"RETURN_CODE's" {ret(KEY_END)}
-"Function" {ret(KEY_END)}
-"ERROR" {ret(KEY_END)}
-"main" {ret(KEY_END)}
-"Array" {ret(KEY_END)}
-"isNotEqual" {ret(KEY_END)}
-"read." {ret(KEY_END)}
-"print." {ret(KEY_END)}
-"call." {ret(KEY_END)}
-"read." {ret(KEY_END)}
-"y." {ret(KEY_END)}
-"n." {ret(KEY_END)}
-"true" {ret(KEY_END)}
-"false" {ret(KEY_END)}
-"SUCCESS," {ret(KEY_END)}
-"standard" {ret(KEY_END)}
-"library" {ret(KEY_END)}
-"x." {ret(KEY_END)}
-"and" {ret(KEY_END)}
-"0xA0F9," {ret(KEY_END)}
-"0b1001000010101111" {ret(KEY_END)} 
-"x" {ret(KEY_END)}
-"pi" {ret(KEY_END)}
-"3var" {ret(KEY_END)}
-"pi/2." {ret(KEY_END)}
-"arr" {ret(KEY_END)}
-"i." {ret(KEY_END)}
-"SUCCESS." {ret(KEY_END)}
+"Function"{IDENTIFIER} {ret(IDENTIFIER)}
+"Int"{IDENTIFIER} {ret(KEY_END)}
+"Float"{IDENTIFIER} {ret(KEY_END)}
+"String"{IDENTIFIER} {ret(KEY_END)}
+"Bool"{IDENTIFIER} {ret(KEY_END)}
+"UInt"{IDENTIFIER} {ret(KEY_END)}
+"UInt16"{IDENTIFIER} {ret(KEY_END)}
+"RETURN_CODE"{IDENTIFIER} {ret(KEY_END)}
+"SUCCESS"{IDENTIFIER} {ret(KEY_END)}
+"RETURN_CODE's"{IDENTIFIER} {ret(KEY_END)}
+"Function"{IDENTIFIER} {ret(KEY_END)}
+"ERROR"{IDENTIFIER} {ret(KEY_END)}
+"main"{IDENTIFIER} {ret(KEY_END)}
+"Array"{IDENTIFIER} {ret(KEY_END)}
+"isNotEqual"{IDENTIFIER} {ret(KEY_END)}
+"read."{IDENTIFIER} {ret(KEY_END)}
+"print."{IDENTIFIER} {ret(KEY_END)}
+"call."{IDENTIFIER} {ret(KEY_END)}
+"read."{IDENTIFIER} {ret(KEY_END)}
+"y."{IDENTIFIER} {ret(KEY_END)}
+"n."{IDENTIFIER} {ret(KEY_END)}
+"true"{IDENTIFIER} {ret(KEY_END)}
+"false"{IDENTIFIER} {ret(KEY_END)}
+"SUCCESS,"{IDENTIFIER} {ret(KEY_END)}
+"standard"{IDENTIFIER} {ret(KEY_END)}
+"library"{IDENTIFIER} {ret(KEY_END)}
+"x."{IDENTIFIER} {ret(KEY_END)}
+"and"{IDENTIFIER} {ret(KEY_END)}
+"0xA0F9,"{IDENTIFIER} {ret(KEY_END)}
+"0b1001000010101111"{IDENTIFIER} {ret(KEY_END)}
+"x"{IDENTIFIER} {ret(KEY_END)}
+"pi"{IDENTIFIER} {ret(KEY_END)}
+"3var"{IDENTIFIER} {ret(KEY_END)}
+"pi/2."{IDENTIFIER} {ret(KEY_END)}
+"arr"{IDENTIFIER} {ret(KEY_END)}
+"arr."{IDENTIFIER} {ret(KEY_END)}
+"i."{IDENTIFIER}{ret(KEY_END)}
+"SUCCESS."{IDENTIFIER} {ret(KEY_END)}
+"end."{IDENTIFIER} {ret(KEY_END)}
+"lambdaExample"{IDENTIFIER} {ret(KEY_END)}
 
 
 
@@ -191,7 +196,10 @@ Znaleznieie indetyfikatorów, aflanumeryczne > 1*/
 \p{Space}+ { }
 
 /* Match any other non-whitespace chars with length > 1 */
-[^[:space:]]{2,1000} {std::cout << "Token with more than one symbol: " << text() << '\n';}
+[^[:space:]]{2,2} {std::cout << "Token with more than one symbol: " << text() << '\n';}
+
+/* Identifiers*/
+[^[:space:]]{3,100} {std::cout << "Identifiers: " << text() << '\n';}
 
 /* Match any other non-whitespace chars with length > 1 */
 [^[:space:]]{1,1} {std::cout << "Token with one symbol: " << text() << '\n';}
