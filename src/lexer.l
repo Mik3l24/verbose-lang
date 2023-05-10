@@ -29,10 +29,10 @@
 /* Utility patterns */
 ENDL \r?\n
 SYMBOL [\.,\"'\+\-\*\/\^\|\(\)=<>!%&\\\[\]\{\}\(\)\?;:]
-BOUNDARY [\p{Space}||{SYMBOL}]
-AFTER_SYMBOL (?=[[:space:][:alnum:]|{SYMBOL}])
-AFTER_BOUNDARY (?=[[:space:][:alnum:]|{BOUNDARY}])
-IDENTIFIER [a-zA-Z_][a-zA-Z0-9_]*
+
+AFTER_SYMBOL (?=.*?)
+AFTER_ALNUM (?=[^{IDENTIFIER_CHARS}].*?)
+IDENTIFIER_CHARS [\p{Alnum}_]
 
 
 
@@ -63,11 +63,10 @@ IDENTIFIER [a-zA-Z_][a-zA-Z0-9_]*
 (\d).(\d+)(?:f?)(?=\P{Alnum}) {retv(LIT_FLOAT, std::stod(text()))}
 /*-int- //no unary minus atm */
 (\d+)(?=\P{Alnum}) {retv(LIT_INT, std::stoi(text()))}
-{SYMBOL} {retv(LIT_STRING, text().substr(1, text().size() - 2))}
+
 
 /* Keyword section    */
-"begin" {ret(KEY_BEGIN)}
-"end" {ret(KEY_END)}
+"end"{AFTER_ALNUM} {ret(KEY_END)}
 "include" {ret(KEY_END)}
 "library" {ret(KEY_END)}
 "enum" {ret(KEY_END)}
@@ -82,9 +81,7 @@ IDENTIFIER [a-zA-Z_][a-zA-Z0-9_]*
 "constant" {ret(KEY_END)}
 "arguments" {ret(KEY_END)}
 "assigned" {ret(KEY_END)}
-"print" {ret(KEY_END)}
 "call" {ret(KEY_END)}
-"read" {ret(KEY_END)}
 "if" {ret(KEY_END)}
 "while" {ret(KEY_END)}
 "size" {ret(KEY_END)}
@@ -120,93 +117,30 @@ IDENTIFIER [a-zA-Z_][a-zA-Z0-9_]*
 "["{AFTER_SYMBOL} {ret(KEY_TERMINATOR)}
 "]"{AFTER_SYMBOL} {ret(KEY_TERMINATOR)}
 ","{AFTER_SYMBOL} {ret(KEY_TERMINATOR)}
-"!"{AFTER_SYMBOL} {ret(KEY_TERMINATOR)}
-"#"{AFTER_SYMBOL} {ret(KEY_TERMINATOR)}
-"&"{AFTER_SYMBOL} {ret(KEY_TERMINATOR)}
 "%"{AFTER_SYMBOL} {ret(KEY_TERMINATOR)}
-"$"{AFTER_SYMBOL} {ret(KEY_TERMINATOR)}
 "<="{AFTER_SYMBOL} {ret(KEY_TERMINATOR)}
 "++"{AFTER_SYMBOL} {ret(KEY_TERMINATOR)}
 "!="{AFTER_SYMBOL} {ret(KEY_TERMINATOR)}
-")."{AFTER_SYMBOL} {ret(KEY_TERMINATOR)}
-"i++"{AFTER_SYMBOL} {ret(KEY_TERMINATOR)}
+
 
 
 /* Identifiers section */
-[A-Za-z_][A-Za-z0-9_]* {ret(IDENTIFIER)}
-"Function"{IDENTIFIER} {ret(IDENTIFIER)}
-"Int"{IDENTIFIER} {ret(KEY_END)}
-"Float"{IDENTIFIER} {ret(KEY_END)}
-"String"{IDENTIFIER} {ret(KEY_END)}
-"Bool"{IDENTIFIER} {ret(KEY_END)}
-"UInt"{IDENTIFIER} {ret(KEY_END)}
-"UInt16"{IDENTIFIER} {ret(KEY_END)}
-"RETURN_CODE"{IDENTIFIER} {ret(KEY_END)}
-"SUCCESS"{IDENTIFIER} {ret(KEY_END)}
-"RETURN_CODE's"{IDENTIFIER} {ret(KEY_END)}
-"Function"{IDENTIFIER} {ret(KEY_END)}
-"ERROR"{IDENTIFIER} {ret(KEY_END)}
-"main"{IDENTIFIER} {ret(KEY_END)}
-"Array"{IDENTIFIER} {ret(KEY_END)}
-"isNotEqual"{IDENTIFIER} {ret(KEY_END)}
-"read."{IDENTIFIER} {ret(KEY_END)}
-"print."{IDENTIFIER} {ret(KEY_END)}
-"call."{IDENTIFIER} {ret(KEY_END)}
-"read."{IDENTIFIER} {ret(KEY_END)}
-"y."{IDENTIFIER} {ret(KEY_END)}
-"n."{IDENTIFIER} {ret(KEY_END)}
-"true"{IDENTIFIER} {ret(KEY_END)}
-"false"{IDENTIFIER} {ret(KEY_END)}
-"SUCCESS,"{IDENTIFIER} {ret(KEY_END)}
-"standard"{IDENTIFIER} {ret(KEY_END)}
-"library"{IDENTIFIER} {ret(KEY_END)}
-"x."{IDENTIFIER} {ret(KEY_END)}
-"and"{IDENTIFIER} {ret(KEY_END)}
-"0xA0F9,"{IDENTIFIER} {ret(KEY_END)}
-"0b1001000010101111"{IDENTIFIER} {ret(KEY_END)}
-"x"{IDENTIFIER} {ret(KEY_END)}
-"pi"{IDENTIFIER} {ret(KEY_END)}
-"3var"{IDENTIFIER} {ret(KEY_END)}
-"pi/2."{IDENTIFIER} {ret(KEY_END)}
-"arr"{IDENTIFIER} {ret(KEY_END)}
-"arr."{IDENTIFIER} {ret(KEY_END)}
-"i."{IDENTIFIER}{ret(KEY_END)}
-"SUCCESS."{IDENTIFIER} {ret(KEY_END)}
-"end."{IDENTIFIER} {ret(KEY_END)}
-"lambdaExample"{IDENTIFIER} {ret(KEY_END)}
+{IDENTIFIER_CHARS}+ {retv(IDENTIFIER, text())}
 
+/* testing/utility */
+/* Match any other non-whitespace chars with length > 1 */
+/* [^[:space:]]{2,2} {std::cout << "Token with more than one symbol: " << text() << '\n';} */
 
+/* Identifiers*/
+/* [^[:space:]]{3,100} {std::cout << "Identifiers: " << text() << '\n';} */
 
-
-/* [A-Za-z_][\w-]*(?=[\p{Space}||{SYMBOL}]) {yylval.strval = strdup(yytext); return IDENTIFIER;} 
-Znaleznieie indetyfikatorów, aflanumeryczne > 1*/
+/* Match any other non-whitespace chars with length > 1 */
+/* [^[:space:]]{1,1} {std::cout << "Token with one symbol: " << text() << '\n';} */
 
 /* Other */
 /*Ignore whitespace*/
-/* {ENDL} {vprint("endline");}
-{LETTER}{ALNUM}* {yylval.strval = strdup(text()); return IDENTIFIER;}
-
-/* Literals section */
-/* {DIGIT}+ {yylval.intval = atoi(text()); return LITERAL_INT;} */ 
-
-
-/* Keywords section */
-
-/* Match whitespace */
 \p{Space}+ { }
-
-/* Match any other non-whitespace chars with length > 1 */
-[^[:space:]]{2,2} {std::cout << "Token with more than one symbol: " << text() << '\n';}
-
-/* Identifiers*/
-[^[:space:]]{3,100} {std::cout << "Identifiers: " << text() << '\n';}
-
-/* Match any other non-whitespace chars with length > 1 */
-[^[:space:]]{1,1} {std::cout << "Token with one symbol: " << text() << '\n';}
 /* Any other non-whitespace chars are an unknown token, lexical error*/
-
-
-
 \P{Space}+ {std::cout << "Unknown token: " << text() << '\n';}
 
 
