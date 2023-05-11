@@ -12,7 +12,8 @@ enum Token
     TOKEN, //INVALID
     KEY_BEGIN, KEY_END, 
     LIT_FLOAT, LIT_INT,
-    KEY_TERMINATOR
+    OP_ADD, OP_SUB, OP_MUL, OP_DIV, OP_H,
+    KEY_TERMINATOR,
 };
 
 #endif

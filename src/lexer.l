@@ -24,15 +24,24 @@ std::string literal_str;
 literal_str.clear(); /*probably unnessesary, but for safety in case it doesn't get cleared*/
 %}
 
+
+
+
+
 /* States */
 %x IN_COMMENT_INLINE
 %x IN_STRING_LITERAL
 
 /* Utility patterns */
 ENDL \r?\n
-SYMBOL [\.,\"'\+\-\*\/\^\|\(\)=<>!%&\\\[\]\{\}]
-BOUNDARY [\p{Space}||{SYMBOL}]
+SYMBOL [\.,\"'\+\-\*\/\^\|\(\)=<>!%&\\\[\]\{\}\(\)\?;:]
+
 AFTER_SYMBOL (?=.*)
+AFTER_ALNUM (?=.*)
+IDENTIFIER_CHARS [\p{Alnum}_]
+
+
+
 
 %%
 /* Comment section */
@@ -62,27 +71,98 @@ AFTER_SYMBOL (?=.*)
     retv(LIT_STRING, return_str);
 }
 <IN_STRING_LITERAL><<EOF>> {err("Lexical Error: String literal not closed");}
+
 /*-float- //at least 1 digit after the decimal point is required 
           so it is not mistaken for the instruction terminator */
-(\d*)\.(\d+)(?:f?)(?=\P{Alnum}*) {retv(LIT_FLOAT, std::stod(text()))} 
+(\d).(\d+)(?:f?){AFTER_ALNUM} {retv(LIT_FLOAT, std::stod(text()))}
 /*-int- //no unary minus atm */
-(\d+)(?=\P{Alnum}*) {retv(LIT_INT, std::stoi(text()))}
+(\d+){AFTER_ALNUM} {retv(LIT_INT, std::stoi(text()))}
 
-/* Keyword section */
-"begin" {ret(KEY_BEGIN)}
-"end" {ret(KEY_END)}
+
+/* Keyword section    */
+"begin"{AFTER_ALNUM} {ret(KEY_BEGIN)}
+"end"{AFTER_ALNUM} {ret(KEY_END)}
+"include"{AFTER_ALNUM} {ret(KEY_INCLUDE)}
+"library"{AFTER_ALNUM} {ret(KEY_LIBRARY)}
+"enum"{AFTER_ALNUM} {ret(KEY_ENUM)}
+"named"{AFTER_ALNUM} {ret(KEY_NAMED)}
+"of"{AFTER_ALNUM} {ret(KEY_OF)}
+"function"{AFTER_ALNUM} {ret(KEY_FUNCTION)}
+"returning"{AFTER_ALNUM} {ret(KEY_RETURNING)}
+"variable"{AFTER_ALNUM} {ret(KEY_VARIABLE)}
+"procedure"{AFTER_ALNUM} {ret(KEY_PROCEDURE)}
+"return"{AFTER_ALNUM} {ret(KEY_RETURN)}
+"parameters"{AFTER_ALNUM} {ret(KEY_PARAMETERS)}
+"constant"{AFTER_ALNUM} {ret(KEY_CONSTANT)}
+"arguments"{AFTER_ALNUM} {ret(KEY_ARGUMENTS)}
+"assigned"{AFTER_ALNUM} {ret(KEY_ASSIGNED)}
+"print"{AFTER_ALNUM} {ret(KEY_PRINT)}
+"call"{AFTER_ALNUM} {ret(KEY_CALL)}
+"read"{AFTER_ALNUM} {ret(KEY_READ)}
+"if"{AFTER_ALNUM} {ret(KEY_IF)}
+"while"{AFTER_ALNUM} {ret(KEY_WHILE)}
+"size"{AFTER_ALNUM} {ret(KEY_SIZE)}
+"by"{AFTER_ALNUM} {ret(KEY_BY)}
+"for"{AFTER_ALNUM} {ret(KEY_FOR)}
+"at"{AFTER_ALNUM} {ret(KEY_AT)}
+"values"{AFTER_ALNUM} {ret(KEY_VALUES)}
+"value"{AFTER_ALNUM} {ret(KEY_VALUE)}
+
 
 
 /* Symbols/operators section */
+"<="{AFTER_SYMBOL} {ret(OP_LESS_EQUAL)}
+">="{AFTER_SYMBOL} {ret(OP_GREATER_EQUAL)}
+"++"{AFTER_SYMBOL} {ret(OP_INCREMENT)}
+"--"{AFTER_SYMBOL} {ret(OP_DECREMENT)}
+"!="{AFTER_SYMBOL} {ret(OP_NOT_EQUAL)}
+"+"{AFTER_SYMBOL} {ret(OP_PLUS)}
+"-"{AFTER_SYMBOL} {ret(OP_MINUS)}
+"*"{AFTER_SYMBOL} {ret(OP_MULT)}
+"/"{AFTER_SYMBOL} {ret(OP_DIV)}
+"^"{AFTER_SYMBOL} {ret(OP_POWER)}
+"."{AFTER_SYMBOL} {ret(KEY_TERMINATOR)}
+"|"{AFTER_SYMBOL} {ret(OP_PIPE)}
+"="{AFTER_SYMBOL} {ret(OP_EQUAL)}
+">"{AFTER_SYMBOL} {ret(OP_GREATER)}
+"<"{AFTER_SYMBOL} {ret(OP_LESS)}
+";"{AFTER_SYMBOL} {ret(OP_SEMICOLON)}
+":"{AFTER_SYMBOL} {ret(OP_COLON)}
+"'s"{AFTER_SYMBOL} {ret(OP_ACCESSOR)}
+"("{AFTER_SYMBOL} {ret(OP_OPEN_PAREN)}
+")"{AFTER_SYMBOL} {ret(OP_CLOSE_PAREN)}
+"}"{AFTER_SYMBOL} {ret(OP_CLOSE_BRACE)}
+"{"{AFTER_SYMBOL} {ret(OP_OPEN_BRACE)}
+"["{AFTER_SYMBOL} {ret(OP_OPEN_BRACKET)}
+"]"{AFTER_SYMBOL} {ret(OP_CLOSE_BRACKET)}
+","{AFTER_SYMBOL} {ret(OP_COMMA)}
+"%"{AFTER_SYMBOL} {ret(OP_PERCENT)}
+
+"or"{AFTER_ALNUM} {ret(OP_OR)}
+"and"{AFTER_ALNUM} {ret(OP_AND)}
+"not"{AFTER_ALNUM} {ret(OP_NOT)}
 
 
 /* Identifiers section */
+{IDENTIFIER_CHARS}+{AFTER_ALNUM} {retv(IDENTIFIER, text())}
 
+
+/* testing/utility */
+/* Match any other non-whitespace chars with length > 1 */
+/* [^[:space:]]{2,2} {std::cout << "Token with more than one symbol: " << text() << '\n';} */
+
+/* Identifiers*/
+/* [^[:space:]]{3,100} {std::cout << "Identifiers: " << text() << '\n';} */
+
+/* Match any other non-whitespace chars with length > 1 */
+/* [^[:space:]]{1,1} {std::cout << "Token with one symbol: " << text() << '\n';} */
 
 /* Other */
 /*Ignore whitespace*/
-\p{Space}
-/*Any other non-whitespace chars are an unknown token, lexical error*/
+\p{Space}+ { }
+/* Any other non-whitespace chars are an unknown token, lexical error*/
 \P{Space}+ {std::cout << "Unknown token: " << text() << '\n';}
-%%
 
+
+
+%%
