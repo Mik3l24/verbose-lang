@@ -9,9 +9,9 @@
 // Print for debugging
 #define vprint(text) {std::cout << text << '\n';}
 // Macro that signifies a token has been found, to be replaced with returns for Bison
-#define ret(token) {std::cout << "Found token " << #token << '\n';}
+#define ret(token) {std::cout << "Found token " << #token << std::endl;}
 // Macro that signifies a token with an assigned value has been found
-#define retv(token,val) {std::cout << "Found token " << #token << " Value " << val << '\n';}
+#define retv(token,val) {std::cout << "Found token " << #token << " Value " << val << std::endl;}
 
 #define err(what) {std::cerr << what << '\n';}
 %}
@@ -37,7 +37,7 @@ ENDL \r?\n
 SYMBOL [\.,\"'\+\-\*\/\^\|\(\)=<>!%&\\\[\]\{\}\(\)\?;:]
 
 AFTER_SYMBOL (?=.*)
-AFTER_ALNUM (?=.*)
+AFTER_ALNUM (?=([^\p{Alnum}_])(.*))
 IDENTIFIER_CHARS [\p{Alnum}_]
 
 
@@ -45,10 +45,10 @@ IDENTIFIER_CHARS [\p{Alnum}_]
 
 %%
 /* Comment section */
-"rem" {
+"rem"{AFTER_ALNUM} {
     push_state(IN_COMMENT_INLINE); vprint("comment");
 }
-("//"|#)(?=.*) {
+("//")(?=.*) {
     push_state(IN_COMMENT_INLINE); vprint("comment");
 }
 <IN_COMMENT_INLINE>[^\n]*
@@ -62,8 +62,11 @@ IDENTIFIER_CHARS [\p{Alnum}_]
 /* Literals section (ex. strings in "", or 1.5f) */
 /*-string-*/
 \"{AFTER_SYMBOL} {push_state(IN_STRING_LITERAL);}
-<IN_STRING_LITERAL>{ENDL} /* Ignore newline character, but escaped n "\n" should still be captured */
-<IN_STRING_LITERAL>\Q\"\E|[^\"] {literal_str += text();}
+<IN_STRING_LITERAL>{ENDL}|\t /* Ignore newline character, but escaped n "\n" should still be captured */
+<IN_STRING_LITERAL>\Q\"\E {literal_str += '"';}
+<IN_STRING_LITERAL>\Q\n\E {literal_str += '\n';}
+<IN_STRING_LITERAL>\Q\t\E {literal_str += '\t';}
+<IN_STRING_LITERAL>[^\"] {literal_str += text();}
 <IN_STRING_LITERAL>\" {
     pop_state();
     std::string return_str = literal_str;
@@ -72,9 +75,15 @@ IDENTIFIER_CHARS [\p{Alnum}_]
 }
 <IN_STRING_LITERAL><<EOF>> {err("Lexical Error: String literal not closed");}
 
+
+
 /*-float- //at least 1 digit after the decimal point is required 
           so it is not mistaken for the instruction terminator */
-(\d).(\d+)(?:f?){AFTER_ALNUM} {retv(LIT_FLOAT, std::stod(text()))}
+(\d+).(\d+)(?:f?){AFTER_ALNUM} {retv(LIT_FLOAT, std::stod(text()))}
+/*-bin int- // not working*/
+(?:0[bB])[10]+{AFTER_ALNUM} {retv(LIT_INT, std::stoi(text(), nullptr, 2))}
+/*-hex int- // not working*/
+0[xX][ABCDEFabcdef\d]+{AFTER_ALNUM} {retv(LIT_INT, std::stoi(text()))}
 /*-int- //no unary minus atm */
 (\d+){AFTER_ALNUM} {retv(LIT_INT, std::stoi(text()))}
 
@@ -96,6 +105,7 @@ IDENTIFIER_CHARS [\p{Alnum}_]
 "constant"{AFTER_ALNUM} {ret(KEY_CONSTANT)}
 "arguments"{AFTER_ALNUM} {ret(KEY_ARGUMENTS)}
 "assigned"{AFTER_ALNUM} {ret(KEY_ASSIGNED)}
+"assign"{AFTER_ALNUM} {ret(KEY_ASSIGN)}
 "print"{AFTER_ALNUM} {ret(KEY_PRINT)}
 "call"{AFTER_ALNUM} {ret(KEY_CALL)}
 "read"{AFTER_ALNUM} {ret(KEY_READ)}
@@ -121,21 +131,18 @@ IDENTIFIER_CHARS [\p{Alnum}_]
 "*"{AFTER_SYMBOL} {ret(OP_MULT)}
 "/"{AFTER_SYMBOL} {ret(OP_DIV)}
 "^"{AFTER_SYMBOL} {ret(OP_POWER)}
-"."{AFTER_SYMBOL} {ret(KEY_TERMINATOR)}
-"|"{AFTER_SYMBOL} {ret(OP_PIPE)}
+"."{AFTER_SYMBOL} {ret(DIV_TERMINATOR)}
 "="{AFTER_SYMBOL} {ret(OP_EQUAL)}
 ">"{AFTER_SYMBOL} {ret(OP_GREATER)}
 "<"{AFTER_SYMBOL} {ret(OP_LESS)}
-";"{AFTER_SYMBOL} {ret(OP_SEMICOLON)}
-":"{AFTER_SYMBOL} {ret(OP_COLON)}
 "'s"{AFTER_SYMBOL} {ret(OP_ACCESSOR)}
-"("{AFTER_SYMBOL} {ret(OP_OPEN_PAREN)}
-")"{AFTER_SYMBOL} {ret(OP_CLOSE_PAREN)}
-"}"{AFTER_SYMBOL} {ret(OP_CLOSE_BRACE)}
-"{"{AFTER_SYMBOL} {ret(OP_OPEN_BRACE)}
-"["{AFTER_SYMBOL} {ret(OP_OPEN_BRACKET)}
-"]"{AFTER_SYMBOL} {ret(OP_CLOSE_BRACKET)}
-","{AFTER_SYMBOL} {ret(OP_COMMA)}
+"("{AFTER_SYMBOL} {ret(DIV_OPEN_PAREN)}
+")"{AFTER_SYMBOL} {ret(DIV_CLOSE_PAREN)}
+"}"{AFTER_SYMBOL} {ret(DIV_CLOSE_BRACE)}
+"{"{AFTER_SYMBOL} {ret(DIV_OPEN_BRACE)}
+"["{AFTER_SYMBOL} {ret(DIV_OPEN_BRACKET)}
+"]"{AFTER_SYMBOL} {ret(DIV_CLOSE_BRACKET)}
+","{AFTER_SYMBOL} {ret(DIV_COMMA)}
 "%"{AFTER_SYMBOL} {ret(OP_PERCENT)}
 
 "or"{AFTER_ALNUM} {ret(OP_OR)}
