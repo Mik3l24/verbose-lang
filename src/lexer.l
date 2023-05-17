@@ -46,17 +46,17 @@ IDENTIFIER_CHARS [\p{Alnum}_]
 %%
 /* Comment section */
 "rem"{AFTER_ALNUM} {
-    push_state(IN_COMMENT_INLINE); vprint("comment");
+    push_state(IN_COMMENT_INLINE); //vprint("comment");
 }
 ("//")(?=.*) {
-    push_state(IN_COMMENT_INLINE); vprint("comment");
+    push_state(IN_COMMENT_INLINE); //vprint("comment");
 }
 <IN_COMMENT_INLINE>[^\n]*
 <IN_COMMENT_INLINE>{ENDL} {
-    pop_state(); vprint("comment end");
+    pop_state(); //vprint("comment end");
 }
 <IN_COMMENT_INLINE><<EOF>> {
-    pop_state(); vprint("comment end");
+    pop_state(); //vprint("comment end");
 }
 
 /* Literals section (ex. strings in "", or 1.5f) */
