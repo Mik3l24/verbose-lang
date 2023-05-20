@@ -3,9 +3,10 @@
 #include <iostream>
 #include <string>
 
-// List of possible tokens
-#include "../src/tokens.h"
+#include "parser.hpp"
 
+
+#ifdef VERBOSE_PARSER_MODE
 // Print for debugging
 #define vprint(text) {std::cout << text << '\n';}
 // Macro that signifies a token has been found, to be replaced with returns for Bison
@@ -14,6 +15,16 @@
 #define retv(token,val) {std::cout << "Found token " << #token << " Value " << val << std::endl;}
 
 #define err(what) {std::cerr << what << '\n';}
+#else 
+// Print for debugging
+#define vprint(text) {std::cout << text << '\n';}
+// Macro that signifies a token has been found, to be replaced with returns for Bison
+#define ret(token) {std::cout << "Found token " << #token << '\n';}
+// Macro that signifies a token with an assigned value has been found
+#define retv(token,val) {std::cout << "Found token " << #token << " Value " << val << '\n';}
+
+#define err(what) {std::cerr << what << '\n';}
+#endif
 %}
 
 %class{
@@ -117,6 +128,7 @@ IDENTIFIER_CHARS [\p{Alnum}_]
 "at"{AFTER_ALNUM} {ret(KEY_AT)}
 "values"{AFTER_ALNUM} {ret(KEY_VALUES)}
 "value"{AFTER_ALNUM} {ret(KEY_VALUE)}
+
 
 
 
