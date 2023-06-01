@@ -12,6 +12,17 @@ using std::make_unique;
 
 int main(int argc, char** argv)
 {
+    CallArgs args;
+    args.list.push_back(make_unique<BinaryOperation>(
+            Operator::PLUS,
+            make_unique<UnaryOperation>(
+                    Operator::MINUS,
+                    make_unique<IntegerLiteral>(1)
+                            ),
+            make_unique<IntegerLiteral>(2)));
+    args.list.push_back(make_unique<FloatLiteral>(2.0));
+    args.list.push_back(make_unique<StringLiteral>("Hello World"));
+    args.display(std::cout, 0);
 
     auto funcdecl = make_unique<FunctionDecl>(String("Cool func"), make_unique<ParamsDecl>(),
                                               make_unique<Procedure>());
