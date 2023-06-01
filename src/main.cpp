@@ -2,11 +2,21 @@
 #include "lexer.h"
 #include "parser.hpp"
 
+#include "ast.h"
+
 extern int yyparse();
+
+using namespace AST;
 
 int main(int argc, char** argv) 
 {
-    yyparse();
+    auto* testparams = new ParamsDecl();
+    auto* testproc = new Procedure();
+    auto* funcdecl = new FunctionDecl(String("Cool func"), testparams, testproc);
+
+    funcdecl->display(std::cout, 0);
+    //yyparse();
+    delete funcdecl;
 }
 
 // #include <iostream>
