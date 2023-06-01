@@ -1,4 +1,5 @@
 #include <cstdio>
+#include <memory>
 #include "lexer.h"
 #include "parser.hpp"
 
@@ -7,16 +8,17 @@
 extern int yyparse();
 
 using namespace AST;
+using std::make_unique;
 
-int main(int argc, char** argv) 
+int main(int argc, char** argv)
 {
-    auto* testparams = new ParamsDecl();
-    auto* testproc = new Procedure();
-    auto* funcdecl = new FunctionDecl(String("Cool func"), testparams, testproc);
+
+    auto funcdecl = make_unique<FunctionDecl>(String("Cool func"), make_unique<ParamsDecl>(),
+                                              make_unique<Procedure>());
 
     funcdecl->display(std::cout, 0);
     //yyparse();
-    delete funcdecl;
+
 }
 
 // #include <iostream>

@@ -1,10 +1,11 @@
 #include "ast.h"
 #include <iostream>
+#include <utility>
 
 using namespace AST;
 
 #define TAB "  "
-#define notnull(ptr) if(ptr == nullptr) {std::cerr << #ptr << " is null\n"; return;}
+#define notnull(target) if(target == nullptr) {std::cerr << #target << " is null\n"; return;}
 
 inline void writeTabs(DISP_ARGS)
 {
@@ -28,10 +29,5 @@ void FunctionDecl::display(DISP_ARGS)
     dispSubNode(procedure);
 }
 
-FunctionDecl::FunctionDecl(String name, ParamsDecl* params, Procedure* procedure)
-    : func_name(std::move(name)), params(params), procedure(procedure) {}
-
-FunctionDecl::~FunctionDecl()
-{
-    delete params; delete procedure;
-}
+FunctionDecl::FunctionDecl(String name, unique_ptr<ParamsDecl> params, unique_ptr<Procedure> procedure)
+    : func_name(std::move(name)), params(std::move(params)), procedure(std::move(procedure)) {}

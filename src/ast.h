@@ -3,13 +3,17 @@
 
 #include <ostream>
 #include <string>
+#include <memory>
 
 typedef std::string String;
-#define DISP_ARGS std::ostream& o, uint tabs
+
 
 // Abstract Syntax Tree
 namespace AST
 {
+#define DISP_ARGS std::ostream& o, uint tabs
+    using std::unique_ptr;
+
     class Node
     {
     public:
@@ -39,14 +43,15 @@ namespace AST
     {
     public:
         String func_name;
-        ParamsDecl* params;
-        Procedure* procedure;
+        unique_ptr<ParamsDecl> params = nullptr;
+        unique_ptr<Procedure> procedure = nullptr;
 
-        virtual const char* nodeName() { return "Function Declaration"; }
-        virtual void display(DISP_ARGS) override;
+        const char* nodeName() override { return "Function Declaration"; }
 
-        FunctionDecl(String name, ParamsDecl* params, Procedure* procedure);
-        ~FunctionDecl() override;
+        void display(DISP_ARGS) override;
+
+        FunctionDecl(String name, unique_ptr<ParamsDecl> params, unique_ptr<Procedure> procedure);
+        ~FunctionDecl() override = default;
     };
 }
 
