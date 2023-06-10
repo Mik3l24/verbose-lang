@@ -30,7 +30,7 @@ bison_target(PARSER "${SRC_DIR}/parser.y" "${PARSER_OUT}" DEFINES_FILE "${PARSER
 #include_directories(${LLVM_INCLUDE_DIRS})
 #add_definitions(${LLVM_DEFINITIONS})
 
-add_executable(verbose "${SRC_DIR}/main.cpp" "${LEXER_OUT}" "${PARSER_OUT}" "${SRC_DIR}/ast.cpp" src/operators.h)
+add_executable(verbose "${SRC_DIR}/main.cpp" "${LEXER_OUT}" "${PARSER_OUT}" "${SRC_DIR}/ast.cpp")
 target_include_directories(verbose PRIVATE "${PARSER_DIR}")
 target_include_directories(verbose PRIVATE "${REFLEX_DIR}/../include")
 add_dependencies(verbose lexer)

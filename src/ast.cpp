@@ -7,6 +7,15 @@ using namespace AST;
 #define TAB "  "
 #define notnull(target) if(target == nullptr) {std::cerr << #target << " is null\n"; return;}
 #define dispSubNode(sub) writeTabs(o, tabs); o << #sub ":\n"; sub->display(o, tabs+1);
+#define dispNullableSubNode(sub) \
+    if(sub != nullptr)  \
+    {                     \
+    writeTabs(o, tabs); o << #sub ":\n"; sub->display(o, tabs+1); \
+    }                    \
+    else                 \
+    {                    \
+        writeTabs(o, tabs); o << #sub ": none\n";\
+    }
 #define dispField(field) writeTabs(o, tabs); o << #field ": " << field << '\n';
 
 inline void writeTabs(DISP_ARGS)
@@ -61,7 +70,7 @@ void Identifier::display(DISP_ARGS)
 void CallArgs::display(DISP_ARGS)
 {
     Node::display(o, tabs);
-    for(auto& arg : list)
+    for(auto& arg: list)
     {
         dispSubNode(arg);
     }
@@ -71,14 +80,7 @@ void Call::display(DISP_ARGS)
 {
     Expression::display(o, tabs);
     dispSubNode(callable);
-    if(args != nullptr)
-    {
-        dispSubNode(args);
-    }
-    else
-    {
-        writeTabs(o, tabs); o << "args: none\n";
-    }
+    dispNullableSubNode(args);
 }
 
 // Operations
@@ -98,19 +100,70 @@ void BinaryOperation::display(DISP_ARGS)
 }
 
 
+void TermDecl::display(DISP_ARGS)
+{
+    Statement::display(o, tabs);
+    dispField(term_name);
+    dispField(is_const);
+    dispNullableSubNode(assigned_value);
+}
+
+void Assignment::display(DISP_ARGS)
+{
+    Statement::display(o, tabs);
+    dispSubNode(term);
+    dispSubNode(assigned_value);
+}
+
+// Procedure-related
+void Procedure::display(DISP_ARGS)
+{
+    Statement::display(o, tabs);
+    for(auto& statement: statements)
+    {
+        dispSubNode(statement);
+    }
+}
+
+void ParamsDecl::display(DISP_ARGS)
+{
+    Node::display(o, tabs);
+    for(auto& parameter : list)
+    {
+        dispSubNode(parameter);
+    }
+}
 
 
 void FunctionDecl::display(DISP_ARGS)
 {
     Statement::display(o, tabs);
-    writeTabs(o, tabs); o << "name: " << func_name << "\n";
-    notnull(params); notnull(procedure);
-    dispSubNode(params);
+    dispField(func_name)
+    dispNullableSubNode(params);
+    dispNullableSubNode(procedure);
+}
+
+void IfStatement::display(std::ostream& o, uint tabs)
+{
+    Statement::display(o, tabs);
+    dispSubNode(condition);
+    dispSubNode(procedure);
+    dispNullableSubNode(else_procedure);
+}
+
+void WhileStatement::display(std::ostream& o, uint tabs)
+{
+    Statement::display(o, tabs);
+    dispSubNode(condition);
     dispSubNode(procedure);
 }
 
-FunctionDecl::FunctionDecl(String name, unique_ptr<ParamsDecl> params, unique_ptr<Procedure> procedure)
-    : func_name(std::move(name)), params(std::move(params)), procedure(std::move(procedure)) {}
-
-
+void Program::display(std::ostream& o, uint tabs)
+{
+    Node::display(o, tabs);
+    for(auto& statement: statements)
+    {
+        dispSubNode(statement);
+    }
+}
 

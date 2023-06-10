@@ -14,9 +14,9 @@ int main(int argc, char** argv)
 {
     CallArgs args;
     args.list.push_back(make_unique<BinaryOperation>(
-            Operator::PLUS,
+            BinaryOperation::Operator::PLUS,
             make_unique<UnaryOperation>(
-                    Operator::MINUS,
+                    UnaryOperation::Operator::NEGATIVE,
                     make_unique<IntegerLiteral>(1)
                             ),
             make_unique<IntegerLiteral>(2)));
@@ -37,12 +37,12 @@ int main(int argc, char** argv)
 
 // int main() {
 //     std::cout << "Enter variable name: ";
-//     std::string var_name;
-//     std::cin >> var_name;
+//     std::string term_name;
+//     std::cin >> term_name;
 //     std::cout << "Enter variable value: ";
 //     int var_value;
 //     std::cin >> var_value;
-//     std::cout << "Assign " << var_name << " value " << var_value << '\n';
+//     std::cout << "Assign " << term_name << " value " << var_value << '\n';
 //     return 0;
 // }
 

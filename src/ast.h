@@ -5,7 +5,6 @@
 #include <string>
 #include <memory>
 #include <vector>
-#include "operators.h"
 
 typedef std::string String;
 typedef int Int;
@@ -23,10 +22,11 @@ namespace AST
     class Node
     {
     public:
+        const Node* parent = nullptr;
+
         virtual const char* nodeName() { return "Node"; }
         virtual void display(DISP_ARGS);
 
-    public:
         virtual ~Node() = default;
     };
 
@@ -43,6 +43,10 @@ namespace AST
         const char* nodeName() override { return "Statement"; }
         void display(DISP_ARGS) override;
     };
+
+    // Possibly temporary typedefs for nodes that might become derived classes
+    typedef Expression Assignable;
+    typedef Expression Type;
 
     // Literal Expressions
     class IntegerLiteral : public Expression
@@ -109,6 +113,16 @@ namespace AST
     class UnaryOperation : public Expression
     {
     public:
+        enum Operator
+        {
+            NEGATIVE,
+            NOT,
+            PRE_INC,
+            PRE_DEC,
+            POST_INC,
+            POST_DEC
+        };
+    public:
         Operator op;
         unique_ptr<Expression> expr;
         const char* nodeName() override { return "Unary Operator"; }
@@ -119,6 +133,13 @@ namespace AST
     class BinaryOperation : public Expression
     {
     public:
+        enum Operator
+        {
+            PLUS, MINUS, MULTIPLY, DIVIDE, MODULO, POWER,
+            EQUAL, NOT_EQUAL, LESS, GREATER, LESS_EQUAL, GREATER_EQUAL,
+            AND, OR
+        };
+    public:
         Operator op;
         unique_ptr<Expression> left;
         unique_ptr<Expression> right;
@@ -128,15 +149,51 @@ namespace AST
             : op(op), left(std::move(left)), right(std::move(right)) {}
     };
 
-    // Procedure-related
-    class Procedure : public Expression
+    // Statements
+    class TermDecl : public Statement
     {
+    public:
+        String term_name;
+        unique_ptr<Expression> type;
+        unique_ptr<Expression> assigned_value = nullptr;
+        bool is_const = false;
+        const char* nodeName() override { return "Term Declaration"; }
+        void display(DISP_ARGS) override;
+        TermDecl(String name, unique_ptr<Expression> type, unique_ptr<Expression> assigned_value, bool is_const)
+            : term_name(std::move(name)), type(std::move(type)), assigned_value(std::move(assigned_value)), is_const(is_const) {}
+        // Declaration without assignment, for non-const terms
+        TermDecl(String name, unique_ptr<Expression> type)
+            : term_name(std::move(name)), type(std::move(type)) {}
+    };
 
+    class Assignment : public Statement
+    {
+    public:
+        unique_ptr<Expression> term;
+        unique_ptr<Expression> assigned_value;
+        const char* nodeName() override { return "Assignment"; }
+        void display(DISP_ARGS) override;
+        Assignment(unique_ptr<Identifier> term, unique_ptr<Expression> assigned_value)
+            : term(std::move(term)), assigned_value(std::move(assigned_value)) {}
+    };
+
+    // Procedure-related
+    class Procedure : public Statement
+    {
+    public:
+        vector<unique_ptr<Statement>> statements;
+        const char* nodeName() override { return "Procedure"; }
+        void display(DISP_ARGS) override;
+        Procedure() = default;
     };
 
     class ParamsDecl : public Node
     {
-
+    public:
+        vector<unique_ptr<TermDecl>> list;
+        const char* nodeName() override { return "Parameter Declaration"; }
+        void display(DISP_ARGS) override;
+        ParamsDecl() = default;
     };
 
     class FunctionDecl : public Statement
@@ -150,8 +207,43 @@ namespace AST
 
         void display(DISP_ARGS) override;
 
-        FunctionDecl(String name, unique_ptr<ParamsDecl> params, unique_ptr<Procedure> procedure);
+        FunctionDecl(String name, unique_ptr<ParamsDecl> params, unique_ptr<Procedure> procedure)
+            : func_name(std::move(name)), params(std::move(params)), procedure(std::move(procedure)) {}
+        FunctionDecl() = default;
         ~FunctionDecl() override = default;
+    };
+
+    class IfStatement : public Statement
+    {
+    public:
+        unique_ptr<Expression> condition;
+        unique_ptr<Procedure> procedure;
+        unique_ptr<Statement> else_procedure = nullptr;
+        const char* nodeName() override { return "If statement"; }
+        void display(DISP_ARGS) override;
+        IfStatement(unique_ptr<Expression> condition, unique_ptr<Procedure> procedure)
+            : condition(std::move(condition)), procedure(std::move(procedure)) {}
+
+    };
+
+    class WhileStatement : public Statement
+    {
+    public:
+        unique_ptr<Expression> condition;
+        unique_ptr<Procedure> procedure;
+        const char* nodeName() override { return "While statement"; }
+        void display(DISP_ARGS) override;
+        WhileStatement(unique_ptr<Expression> condition, unique_ptr<Procedure> procedure)
+            : condition(std::move(condition)), procedure(std::move(procedure)) {}
+    };
+
+    class Program : public Node
+    {
+    public:
+        vector<unique_ptr<Statement>> statements;
+        const char* nodeName() override { return "Program"; }
+        void display(DISP_ARGS) override;
+        Program() = default;
     };
 }
 
