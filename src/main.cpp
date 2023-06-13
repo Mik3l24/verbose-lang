@@ -10,27 +10,66 @@ extern int yyparse();
 using namespace AST;
 using std::make_unique;
 
-int main(int argc, char** argv)
+void testAST()
 {
     CallArgs args;
     args.list.push_back(make_unique<BinaryOperation>(
-            BinaryOperation::Operator::PLUS,
             make_unique<UnaryOperation>(
-                    UnaryOperation::Operator::NEGATIVE,
-                    make_unique<IntegerLiteral>(1)
+                    make_unique<IntegerLiteral>(1),
+                    UnaryOperation::Operator::NEGATIVE
                             ),
-            make_unique<IntegerLiteral>(2)));
+            make_unique<IntegerLiteral>(2),
+             BinaryOperation::Operator::PLUS));
     args.list.push_back(make_unique<FloatLiteral>(2.0));
     args.list.push_back(make_unique<StringLiteral>("Hello World"));
     args.display(std::cout, 0);
 
-    auto funcdecl = make_unique<FunctionDecl>(String("Cool func"), make_unique<ParamsDecl>(),
+    auto funcdecl = make_unique<FunctionDecl>(make_unique<Identifier>(String("Cool func")), make_unique<ParamsDecl>(),
                                               make_unique<Procedure>());
 
     funcdecl->display(std::cout, 0);
+
     //yyparse();
 
 }
+
+FILE* yyin;
+
+extern Lexer YY_SCANNER;
+
+extern unique_ptr<Program> program;
+
+int main(int argc, char** argv)
+{
+    if(argc < 2)
+    {
+        printf("Usage: %s <filename>\n", argv[0]);
+        return 1;
+    }
+
+    FILE* file = fopen(argv[1], "r");
+    if(file == nullptr)
+    {
+        printf("Error: could not open file %s\n", argv[1]);
+        return 1;
+    }
+    // declaration of yyin
+
+
+    yyin = file;
+
+    YY_SCANNER.in(reflex::Input(file));
+
+    yyparse();
+
+    fclose(file);
+
+    program->display(std::cout, 0);
+
+    //testAST();
+    return 0;
+}
+
 
 // #include <iostream>
 // #include "tokens.h"

@@ -6,7 +6,7 @@ using namespace AST;
 
 #define TAB "  "
 #define notnull(target) if(target == nullptr) {std::cerr << #target << " is null\n"; return;}
-#define dispSubNode(sub) writeTabs(o, tabs); o << #sub ":\n"; sub->display(o, tabs+1);
+//#define dispSubNode(sub) writeTabs(o, tabs); o << #sub ":\n"; sub->display(o, tabs+1);
 #define dispNullableSubNode(sub) \
     if(sub != nullptr)  \
     {                     \
@@ -16,6 +16,7 @@ using namespace AST;
     {                    \
         writeTabs(o, tabs); o << #sub ": none\n";\
     }
+#define dispSubNode(sub) dispNullableSubNode(sub)
 #define dispField(field) writeTabs(o, tabs); o << #field ": " << field << '\n';
 
 inline void writeTabs(DISP_ARGS)
@@ -32,7 +33,7 @@ void Node::display(DISP_ARGS)
 
 void Expression::display(DISP_ARGS)
 {
-    Node::display(o, tabs);
+    Statement::display(o, tabs);
 }
 
 void Statement::display(DISP_ARGS)
@@ -103,7 +104,7 @@ void BinaryOperation::display(DISP_ARGS)
 void TermDecl::display(DISP_ARGS)
 {
     Statement::display(o, tabs);
-    dispField(term_name);
+    dispSubNode(term_name);
     dispField(is_const);
     dispNullableSubNode(assigned_value);
 }
@@ -138,7 +139,8 @@ void ParamsDecl::display(DISP_ARGS)
 void FunctionDecl::display(DISP_ARGS)
 {
     Statement::display(o, tabs);
-    dispField(func_name)
+    dispNullableSubNode(func_name);
+    dispNullableSubNode(return_type);
     dispNullableSubNode(params);
     dispNullableSubNode(procedure);
 }

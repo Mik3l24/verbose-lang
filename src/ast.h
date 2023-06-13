@@ -30,17 +30,17 @@ namespace AST
         virtual ~Node() = default;
     };
 
-    class Expression : public Node
-    {
-    public:
-        const char* nodeName() override { return "Expression"; }
-        void display(DISP_ARGS) override;
-    };
-
     class Statement : public Node
     {
     public:
         const char* nodeName() override { return "Statement"; }
+        void display(DISP_ARGS) override;
+    };
+
+    class Expression : public Statement
+    {
+    public:
+        const char* nodeName() override { return "Expression"; }
         void display(DISP_ARGS) override;
     };
 
@@ -127,7 +127,7 @@ namespace AST
         unique_ptr<Expression> expr;
         const char* nodeName() override { return "Unary Operator"; }
         void display(DISP_ARGS) override;
-        UnaryOperation(Operator operand, unique_ptr<Expression> expr) : op(operand), expr(std::move(expr)) {}
+        UnaryOperation(unique_ptr <Expression> expr, Operator operand) : op(operand), expr(std::move(expr)) {}
     };
 
     class BinaryOperation : public Expression
@@ -145,7 +145,7 @@ namespace AST
         unique_ptr<Expression> right;
         const char* nodeName() override { return "Binary Operator"; }
         void display(DISP_ARGS) override;
-        BinaryOperation(Operator op, unique_ptr<Expression> left, unique_ptr<Expression> right)
+        BinaryOperation(unique_ptr <Expression> left, unique_ptr <Expression> right, Operator op)
             : op(op), left(std::move(left)), right(std::move(right)) {}
     };
 
@@ -153,16 +153,16 @@ namespace AST
     class TermDecl : public Statement
     {
     public:
-        String term_name;
+        unique_ptr<Identifier> term_name;
         unique_ptr<Expression> type;
         unique_ptr<Expression> assigned_value = nullptr;
         bool is_const = false;
         const char* nodeName() override { return "Term Declaration"; }
         void display(DISP_ARGS) override;
-        TermDecl(String name, unique_ptr<Expression> type, unique_ptr<Expression> assigned_value, bool is_const)
+        TermDecl(unique_ptr<Identifier> name, unique_ptr<Expression> type, unique_ptr<Expression> assigned_value, bool is_const)
             : term_name(std::move(name)), type(std::move(type)), assigned_value(std::move(assigned_value)), is_const(is_const) {}
         // Declaration without assignment, for non-const terms
-        TermDecl(String name, unique_ptr<Expression> type)
+        TermDecl(unique_ptr<Identifier> name, unique_ptr<Expression> type)
             : term_name(std::move(name)), type(std::move(type)) {}
     };
 
@@ -199,7 +199,8 @@ namespace AST
     class FunctionDecl : public Statement
     {
     public:
-        String func_name;
+        unique_ptr<Identifier> func_name = nullptr;
+        unique_ptr<Expression> return_type = nullptr;
         unique_ptr<ParamsDecl> params = nullptr;
         unique_ptr<Procedure> procedure = nullptr;
 
@@ -207,7 +208,7 @@ namespace AST
 
         void display(DISP_ARGS) override;
 
-        FunctionDecl(String name, unique_ptr<ParamsDecl> params, unique_ptr<Procedure> procedure)
+        FunctionDecl(unique_ptr<Identifier> name, unique_ptr<ParamsDecl> params, unique_ptr<Procedure> procedure)
             : func_name(std::move(name)), params(std::move(params)), procedure(std::move(procedure)) {}
         FunctionDecl() = default;
         ~FunctionDecl() override = default;
