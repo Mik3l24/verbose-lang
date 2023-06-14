@@ -1,0 +1,55 @@
+Program
+statement:
+  While statement
+  condition:
+    Binary Operator
+    op: 8
+    left:
+      Identifier
+      name: a
+    right:
+      Integer Literal
+      value: 10
+  procedure:
+    Procedure
+    statement:
+      If statement
+      condition:
+        Binary Operator
+        op: 13
+        left:
+          Unary Operator
+          op: 1
+          expr:
+            Identifier
+            name: bool_v
+        right:
+          Binary Operator
+          op: 12
+          left:
+            Binary Operator
+            op: 8
+            left:
+              Identifier
+              name: abcd
+            right:
+              Float Literal
+              value: 115
+          right:
+            Binary Operator
+            op: 7
+            left:
+              Identifier
+              name: cool
+            right:
+              Integer Literal
+              value: 0
+      procedure:
+        Procedure
+        statement:
+          Unary Operator
+          op: 4
+          expr:
+            Identifier
+            name: x
+      else_procedure: none

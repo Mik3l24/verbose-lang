@@ -130,6 +130,8 @@
 %type <term_decl_t> term_decl
 %type <function_decl_t> function_decl function_decl_rec function_decl_params_rec
 %type <assignment_t> assignment
+%type <if_statement_t> if_statement
+%type <while_statement_t> while_statement
 
 // Precedence
 // Logical
@@ -269,6 +271,17 @@ assignment
 | KEY_ASSIGN error KEY_VALUE error { $$ = new Assignment(unique_ptr<Expression>(ERROR_VAL), unique_ptr<Expression>(ERROR_VAL)); yyerrok; }
 ;
 
+
+if_statement
+: KEY_IF expression procedure { $$ = new IfStatement(unique_ptr<Expression>($2), unique_ptr<Procedure>($3)); }
+;
+
+
+while_statement
+: KEY_WHILE expression procedure { $$ = new WhileStatement(unique_ptr<Expression>($2), unique_ptr<Procedure>($3)); }
+;
+
+
 statement 
 : DIV_TERMINATOR { $$ = nullptr; }
 | expression DIV_TERMINATOR { $$ = $1; }
@@ -276,9 +289,12 @@ statement
 | function_decl { $$ = $1; }
 //| function_decl DIV_TERMINATOR { $$ = $1; }
 | assignment DIV_TERMINATOR { $$ = $1; }
+| if_statement { $$ = $1; }
+| while_statement { $$ = $1; }
 // Error Handling
 | error DIV_TERMINATOR { $$ = ERROR_VAL; yyerrok; }
 ;
+
 
 procedure_rec 
 : KEY_PROCEDURE { $$ = new Procedure(); }

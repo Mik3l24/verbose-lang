@@ -1,17 +1,8 @@
-// Test with a purposeful error
-function returning - named 24+14
-parameters 
-    variable Float named x,
-    variable Float named y,
-    variable String named z,
-end
+// Testing of while and if statements (if without else)
+while a < 10
 procedure
-    constant Int named ca assigned (+ 15 + ).
-    constant Float named cb assigned 15.0.
-    constant String named cc assigned "cool".
-
-
-    //assign x value 15.0 + -x ^ 2.0. 
-
-    call print parameters x, y, z end.
+    if not bool_v or abcd < 115 and cool != 0
+    procedure
+        x++.
+    end 
 end
