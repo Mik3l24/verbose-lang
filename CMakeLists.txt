@@ -43,3 +43,16 @@ target_link_libraries(verbose ${reflex_lib})
 
 # Link against LLVM libraries
 #target_link_libraries(verbose ${llvm_libs})
+
+enable_testing()
+
+message(CMAKE_CURRENT_SRC_DIR: ${PROJECT_SOURCE_DIR})
+
+add_test(
+        difftest1
+        "${PROJECT_SOURCE_DIR}/tests/difftest.sh"
+        ${PROJECT_SOURCE_DIR}
+        1
+        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+)
+
