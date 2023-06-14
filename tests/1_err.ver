@@ -1,0 +1,19 @@
+// Test with a purposeful error
+function returning x named cool
+parameters 
+    variable Float named x,
+    variable Float named y,
+    variable String named z,
+    constant Int named invalid assigned 15.0,
+end
+procedure
+    constant Int named ca assigned (+ 15 + ).
+    constant Float named cb assigned 15.0.
+    constant String named cc assigned "cool".
+
+    named c constant.
+
+    //assign x value 15.0 + -x ^ 2.0. 
+
+    call print parameters x, y, z end.
+end

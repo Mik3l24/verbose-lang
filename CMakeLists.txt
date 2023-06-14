@@ -48,11 +48,12 @@ enable_testing()
 
 message(CMAKE_CURRENT_SRC_DIR: ${PROJECT_SOURCE_DIR})
 
-add_test(
-        difftest1
-        "${PROJECT_SOURCE_DIR}/tests/difftest.sh"
-        ${PROJECT_SOURCE_DIR}
-        1
+add_test( difftest1 "${PROJECT_SOURCE_DIR}/tests/difftest.sh"
+        ${PROJECT_SOURCE_DIR} 1
+        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+)
+add_test( difftest1_1 "${PROJECT_SOURCE_DIR}/tests/difftest.sh"
+        ${PROJECT_SOURCE_DIR} 1_1
         WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
 )
 

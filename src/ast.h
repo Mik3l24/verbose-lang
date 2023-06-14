@@ -174,7 +174,7 @@ namespace AST
         unique_ptr<Expression> assigned_value;
         const char* nodeName() override { return "Assignment"; }
         void display(DISP_ARGS) override;
-        Assignment(unique_ptr<Identifier> term, unique_ptr<Expression> assigned_value)
+        Assignment(unique_ptr<Expression> term, unique_ptr<Expression> assigned_value)
             : term(std::move(term)), assigned_value(std::move(assigned_value)) {}
     };
 

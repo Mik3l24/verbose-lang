@@ -122,18 +122,20 @@
 %token OP_NOT
 
 // AST TYPES
-%type <expression_t> expression type
+%type <expression_t> expression ident_expr type
 %type <statement_t> statement
 %type <procedure_t> procedure_rec procedure
 %type <call_t> call call_rec
 %type <identifier_t> identifier
 %type <term_decl_t> term_decl
 %type <function_decl_t> function_decl function_decl_rec function_decl_params_rec
+%type <assignment_t> assignment
 
 // Precedence
 // Logical
 %left OP_OR 
 %left OP_AND
+%right OP_NOT
 
 // Relational //(should it be associative?)
 %left OP_LESS OP_LESS_EQUAL OP_GREATER OP_GREATER_EQUAL OP_EQUAL OP_NOT_EQUAL
@@ -143,6 +145,10 @@
 %left OP_MULT OP_DIV OP_PERCENT
 %right OP_POWER
 %left OP_ACCESSOR
+
+%right UMINUS
+
+%right OP_INCREMENT OP_DECREMENT
 
 %start program
 
@@ -155,6 +161,10 @@ program
 
 identifier 
 : IDENTIFIER { $$ = new Identifier(*$1); delete $1; }
+;
+
+ident_expr
+: identifier { $$ = $1; }
 ;
 
 type 
@@ -170,15 +180,17 @@ term_decl
 ;
 
 function_decl 
-: function_decl_rec procedure { $$->procedure = unique_ptr<Procedure>($2); }
+: function_decl_rec procedure { $$ = $1; $$->procedure = unique_ptr<Procedure>($2); }
 ;
 
 function_decl_rec 
 : KEY_FUNCTION { $$ = new FunctionDecl(); } 
+| function_decl_rec KEY_RETURNING type { $$->return_type = unique_ptr<Expression>($3); }
 | function_decl_rec KEY_NAMED identifier { $$->func_name = unique_ptr<Identifier>($3); }
 | function_decl_params_rec KEY_END { $$ = $1; }
+//| function_decl_rec procedure { $$ = $1; $$->procedure = unique_ptr<Procedure>($2); }
 // Error Handling
-| function_decl_rec KEY_RETURNING error { printerr("Expected return type afer 'returning' in function declaration"); $$->return_type = unique_ptr<Expression>(ERROR_VAL); yyerrok; }
+| function_decl_rec KEY_RETURNING error { printerr("Expected return type afer 'returning' in function declaration"); $$->return_type = unique_ptr<Expression>(ERROR_VAL); yyerrok; } 
 | function_decl_rec KEY_NAMED error { printerr("Expected identifier after 'named' in function declaration"); $$->func_name = unique_ptr<Identifier>(ERROR_VAL); yyerrok; }
 ;
 
@@ -207,11 +219,9 @@ call
 | call_rec KEY_END { $$ = $1; }
 ;
 
-
+///*Empty*/ { $$ = nullptr; }
 expression 
-: /*Empty*/ { $$ = nullptr; }
-// Brackets
-| DIV_OPEN_PAREN expression DIV_CLOSE_PAREN { $$ = $2; }
+: DIV_OPEN_PAREN expression DIV_CLOSE_PAREN { $$ = $2; } // Brackets
 | DIV_OPEN_BRACE expression DIV_CLOSE_BRACE { $$ = $2; }
 | DIV_OPEN_BRACKET expression DIV_CLOSE_BRACKET { $$ = $2; }
 // Operations
@@ -229,8 +239,8 @@ expression
 | expression OP_GREATER_EQUAL expression { $$ = new BinaryOperation(unique_ptr<Expression>($1), unique_ptr<Expression>($3), BinaryOperation::Operator::GREATER_EQUAL); }
 | expression OP_AND expression { $$ = new BinaryOperation(unique_ptr<Expression>($1), unique_ptr<Expression>($3), BinaryOperation::Operator::AND); }
 | expression OP_OR expression { $$ = new BinaryOperation(unique_ptr<Expression>($1), unique_ptr<Expression>($3), BinaryOperation::Operator::OR); }
-| OP_MINUS expression { $$ = new UnaryOperation(unique_ptr<Expression>($2), UnaryOperation::Operator::NEGATIVE); }
-| OP_NOT expression { $$ = new UnaryOperation(unique_ptr<Expression>($2), UnaryOperation::Operator::NOT); }
+| OP_MINUS expression %prec UMINUS { $$ = new UnaryOperation(unique_ptr<Expression>($2), UnaryOperation::Operator::NEGATIVE); }
+| OP_NOT expression %prec UMINUS { $$ = new UnaryOperation(unique_ptr<Expression>($2), UnaryOperation::Operator::NOT); }
 | OP_INCREMENT expression { $$ = new UnaryOperation(unique_ptr<Expression>($2), UnaryOperation::Operator::PRE_INC); }
 | OP_DECREMENT expression { $$ = new UnaryOperation(unique_ptr<Expression>($2), UnaryOperation::Operator::PRE_DEC); }
 | expression OP_INCREMENT { $$ = new UnaryOperation(unique_ptr<Expression>($1), UnaryOperation::Operator::POST_INC); }
@@ -250,12 +260,23 @@ expression
 ;
 
 
+// Statements
+assignment
+: KEY_ASSIGN ident_expr KEY_VALUE expression { $$ = new Assignment(unique_ptr<Expression>($2), unique_ptr<Expression>($4)); }
+// Error Handling
+| KEY_ASSIGN ident_expr KEY_VALUE error { $$ = new Assignment(unique_ptr<Expression>($2), unique_ptr<Expression>(ERROR_VAL)); yyerrok; }
+| KEY_ASSIGN error KEY_VALUE expression { $$ = new Assignment(unique_ptr<Expression>(ERROR_VAL), unique_ptr<Expression>($4)); yyerrok; }
+| KEY_ASSIGN error KEY_VALUE error { $$ = new Assignment(unique_ptr<Expression>(ERROR_VAL), unique_ptr<Expression>(ERROR_VAL)); yyerrok; }
+;
+
 statement 
 : DIV_TERMINATOR { $$ = nullptr; }
 | expression DIV_TERMINATOR { $$ = $1; }
 | term_decl DIV_TERMINATOR { $$ = $1; }
 | function_decl { $$ = $1; }
-| function_decl DIV_TERMINATOR { $$ = $1; }
+//| function_decl DIV_TERMINATOR { $$ = $1; }
+| assignment DIV_TERMINATOR { $$ = $1; }
+// Error Handling
 | error DIV_TERMINATOR { $$ = ERROR_VAL; yyerrok; }
 ;
 
@@ -264,12 +285,9 @@ procedure_rec
 | procedure_rec statement { $$->statements.emplace_back($2); }
 ;
 
-
-
 procedure 
 : procedure_rec KEY_END { $$ = $1; }
 ;
-
 
 
 %%
