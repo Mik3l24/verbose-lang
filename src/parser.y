@@ -24,6 +24,10 @@
         std::cerr << "Parser error: " << s << '\n';
     }
 
+    static void printerr(const char* s) {
+        std::cerr << "Parser error: " << s << '\n';
+    }
+
     
 }
 
@@ -33,24 +37,24 @@
     int intv;
     double floatv;
 
-    AST::Node* node;
-    AST::Expression* expression;
-    AST::Statement* statement;
-    AST::IntegerLiteral* integer_literal;
-    AST::FloatLiteral* float_literal;
-    AST::StringLiteral* string_literal;
-    AST::Identifier* identifier;
-    AST::CallArgs* call_args;
-    AST::Call* call;
-    AST::UnaryOperation* unary_operation;
-    AST::BinaryOperation* binary_operation;
-    AST::TermDecl* term_decl;
-    AST::Assignment* assignment;
-    AST::Procedure* procedure;
-    AST::ParamsDecl* params_decl;
-    AST::FunctionDecl* function_decl;
-    AST::IfStatement* if_statement;
-    AST::WhileStatement* while_statement;
+    AST::Node* node_t;
+    AST::Expression* expression_t;
+    AST::Statement* statement_t;
+    AST::IntegerLiteral* integer_literal_t;
+    AST::FloatLiteral* float_literal_t;
+    AST::StringLiteral* string_literal_t;
+    AST::Identifier* identifier_t;
+    AST::CallArgs* call_args_t;
+    AST::Call* call_t;
+    AST::UnaryOperation* unary_operation_t;
+    AST::BinaryOperation* binary_operation_t;
+    AST::TermDecl* term_decl_t;
+    AST::Assignment* assignment_t;
+    AST::Procedure* procedure_t;
+    AST::ParamsDecl* params_decl_t;
+    AST::FunctionDecl* function_decl_t;
+    AST::IfStatement* if_statement_t;
+    AST::WhileStatement* while_statement_t;
 }
 
 // Identifiers, Literals 
@@ -118,13 +122,13 @@
 %token OP_NOT
 
 // AST TYPES
-%type <expression> expression type
-%type <statement> statement
-%type <procedure> procedure_rec procedure
-%type <call> call call_rec
-%type <identifier> identifier
-%type <term_decl> term_decl
-%type <function_decl> function_decl function_decl_params_rec
+%type <expression_t> expression type
+%type <statement_t> statement
+%type <procedure_t> procedure_rec procedure
+%type <call_t> call call_rec
+%type <identifier_t> identifier
+%type <term_decl_t> term_decl
+%type <function_decl_t> function_decl function_decl_rec function_decl_params_rec
 
 // Precedence
 // Logical
@@ -161,14 +165,19 @@ term_decl : KEY_VARIABLE type KEY_NAMED identifier { $$ = new TermDecl(unique_pt
           | KEY_CONSTANT type KEY_NAMED identifier KEY_ASSIGNED expression { $$ = new TermDecl(unique_ptr<Identifier>($4), unique_ptr<Expression>($2), unique_ptr<Expression>($6), true); }
           ;
 
-function_decl : KEY_FUNCTION { $$ = new FunctionDecl(); } 
-              | function_decl KEY_RETURNING type { $$->return_type = unique_ptr<Expression>($3); }
-              | function_decl KEY_NAMED identifier { $$->func_name = unique_ptr<Identifier>($3); }
-              | function_decl_params_rec KEY_END { $$ = $1; }
-              | function_decl procedure { $$->procedure = unique_ptr<Procedure>($2); }
+function_decl : function_decl_rec procedure { $$->procedure = unique_ptr<Procedure>($2); }
               ;
 
-function_decl_params_rec : function_decl KEY_PARAMETERS term_decl 
+function_decl_rec : KEY_FUNCTION { $$ = new FunctionDecl(); } 
+                  | function_decl_rec KEY_RETURNING type { $$->return_type = unique_ptr<Expression>($3); }
+                  | function_decl_rec KEY_NAMED identifier { $$->func_name = unique_ptr<Identifier>($3); }
+                  | function_decl_params_rec KEY_END { $$ = $1; }
+                  // Error Handling
+                  | function_decl_rec KEY_RETURNING error { printerr("Expected return type afer 'returning' in function declaration"); $$->return_type = unique_ptr<Expression>(ERROR_VAL); yyerrok; }
+                  | function_decl_rec KEY_NAMED error { printerr("Expected identifier after 'named' in function declaration"); $$->func_name = unique_ptr<Identifier>(ERROR_VAL); yyerrok; }
+                  ;
+
+function_decl_params_rec : function_decl_rec KEY_PARAMETERS term_decl 
                         { 
                             $$ = $1; 
                             if($$->params == nullptr) 
@@ -177,6 +186,8 @@ function_decl_params_rec : function_decl KEY_PARAMETERS term_decl
                         }
                         | function_decl_params_rec DIV_COMMA term_decl { $$->params->list.emplace_back($3); }
                         | function_decl_params_rec DIV_COMMA {}
+                        // Error Handling
+                        | function_decl_params_rec DIV_COMMA error { $$->params->list.emplace_back(ERROR_VAL); yyerrok; }
                         ;
 
 // Expressions
@@ -223,18 +234,23 @@ expression : /*Empty*/ { $$ = nullptr; }
            | identifier { $$ = $1; }
            // Function call
            | call { $$ = $1; }
+           // Error Handling
+           | DIV_OPEN_PAREN error DIV_CLOSE_PAREN { $$ = ERROR_VAL; yyerrok; }
+           | DIV_OPEN_BRACE error DIV_CLOSE_BRACE { $$ = ERROR_VAL; yyerrok; }
+           | DIV_OPEN_BRACKET error DIV_CLOSE_BRACKET { $$ = ERROR_VAL; yyerrok; }
            ;
 
-statement : expression DIV_TERMINATOR { $$ = $1; }
+statement : DIV_TERMINATOR { $$ = nullptr; }
+          | expression DIV_TERMINATOR { $$ = $1; }
           | term_decl DIV_TERMINATOR { $$ = $1; }
           | function_decl { $$ = $1; }
-          
-          | error DIV_TERMINATOR { $$ = nullptr; yyerrok; }
+          | function_decl DIV_TERMINATOR { $$ = $1; }
+          | error DIV_TERMINATOR { $$ = ERROR_VAL; yyerrok; }
           ;
 
 procedure_rec : KEY_PROCEDURE { $$ = new Procedure(); }
-          | procedure_rec statement { $$->statements.emplace_back($2); }
-          ;
+              | procedure_rec statement { $$->statements.emplace_back($2); }
+              ;
 
 
 

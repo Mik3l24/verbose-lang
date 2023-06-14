@@ -10,6 +10,7 @@ typedef std::string String;
 typedef int Int;
 typedef float Float;
 
+#define ERROR_VAL nullptr
 
 // Abstract Syntax Tree
 namespace AST
