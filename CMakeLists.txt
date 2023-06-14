@@ -61,3 +61,7 @@ add_test( difftest2_while_if "${PROJECT_SOURCE_DIR}/tests/difftest.sh"
         ${PROJECT_SOURCE_DIR} 2
         WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
 )
+add_test( difftest2_if_else "${PROJECT_SOURCE_DIR}/tests/difftest.sh"
+        ${PROJECT_SOURCE_DIR} 2_1
+        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+)

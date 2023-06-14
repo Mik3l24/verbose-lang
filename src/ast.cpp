@@ -150,8 +150,21 @@ void IfStatement::display(std::ostream& o, uint tabs)
     Statement::display(o, tabs);
     dispSubNode(condition);
     dispSubNode(procedure);
-    dispNullableSubNode(else_procedure);
+    dispNullableSubNode(else_node);
 }
+
+void Else::display(std::ostream& o, uint tabs)
+{
+    Node::display(o, tabs);
+    dispSubNode(procedure);
+}
+
+void ElseIf::display(std::ostream& o, uint tabs)
+{
+    Node::display(o, tabs);
+    dispSubNode(if_statement);
+}
+
 
 void WhileStatement::display(std::ostream& o, uint tabs)
 {

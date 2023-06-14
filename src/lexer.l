@@ -134,6 +134,7 @@ IDENTIFIER_CHARS [\p{Alnum}_]
 "assign"{AFTER_ALNUM} {ret(KEY_ASSIGN)}
 "call"{AFTER_ALNUM} {ret(KEY_CALL)}
 "if"{AFTER_ALNUM} {ret(KEY_IF)}
+"else"{AFTER_ALNUM} {ret(KEY_ELSE)}
 "while"{AFTER_ALNUM} {ret(KEY_WHILE)}
 "size"{AFTER_ALNUM} {ret(KEY_SIZE)}
 "by"{AFTER_ALNUM} {ret(KEY_BY)}

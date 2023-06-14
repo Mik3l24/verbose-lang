@@ -1,0 +1,74 @@
+Program
+statement:
+  If statement
+  condition:
+    Binary Operator
+    op: 13
+    left:
+      Identifier
+      name: pancakes
+    right:
+      Identifier
+      name: waffles
+  procedure:
+    Procedure
+    statement:
+      Call
+      callable:
+        Identifier
+        name: println
+      args:
+        Call Arguments
+  else_node:
+    Else
+    procedure:
+      Procedure
+      statement:
+        Call
+        callable:
+          Identifier
+          name: println
+        args:
+          Call Arguments
+statement:
+  If statement
+  condition:
+    Identifier
+    name: something
+  procedure:
+    Procedure
+    statement:
+      Call
+      callable:
+        Identifier
+        name: println
+      args:
+        Call Arguments
+  else_node:
+    Else If
+    if_statement:
+      If statement
+      condition:
+        Identifier
+        name: anything
+      procedure:
+        Procedure
+        statement:
+          Call
+          callable:
+            Identifier
+            name: println
+          args:
+            Call Arguments
+      else_node:
+        Else
+        procedure:
+          Procedure
+          statement:
+            Assignment
+            term:
+              Identifier
+              name: x
+            assigned_value:
+              Integer Literal
+              value: 15

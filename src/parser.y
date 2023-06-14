@@ -82,6 +82,7 @@
 %token KEY_ASSIGN
 %token KEY_CALL
 %token KEY_IF
+%token KEY_ELSE
 %token KEY_WHILE
 %token KEY_SIZE
 %token KEY_BY
@@ -274,6 +275,9 @@ assignment
 
 if_statement
 : KEY_IF expression procedure { $$ = new IfStatement(unique_ptr<Expression>($2), unique_ptr<Procedure>($3)); }
+// Else related
+| KEY_IF expression procedure KEY_ELSE procedure { $$ = new IfStatement(unique_ptr<Expression>($2), unique_ptr<Procedure>($3), make_unique<Else>(unique_ptr<Procedure>($5))); }
+| KEY_IF expression procedure KEY_ELSE if_statement { $$ = new IfStatement(unique_ptr<Expression>($2), unique_ptr<Procedure>($3), make_unique<ElseIf>(unique_ptr<IfStatement>($5))); }
 ;
 
 

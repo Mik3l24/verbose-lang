@@ -52,4 +52,4 @@ statement:
           expr:
             Identifier
             name: x
-      else_procedure: none
+      else_node: none

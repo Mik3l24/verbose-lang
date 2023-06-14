@@ -215,18 +215,47 @@ namespace AST
         ~FunctionDecl() override = default;
     };
 
+    // If specific utility classes
+    class AbstractElse : public Node
+    {
+    public:
+        const char* nodeName() override = 0;
+        void display(DISP_ARGS) override = 0;
+    };
+
     class IfStatement : public Statement
     {
     public:
         unique_ptr<Expression> condition;
         unique_ptr<Procedure> procedure;
-        unique_ptr<Statement> else_procedure = nullptr;
+        unique_ptr<AbstractElse> else_node = nullptr;
         const char* nodeName() override { return "If statement"; }
         void display(DISP_ARGS) override;
         IfStatement(unique_ptr<Expression> condition, unique_ptr<Procedure> procedure)
             : condition(std::move(condition)), procedure(std::move(procedure)) {}
+        IfStatement(unique_ptr<Expression> condition, unique_ptr<Procedure> procedure, unique_ptr<AbstractElse> else_node)
+            : condition(std::move(condition)), procedure(std::move(procedure)), else_node(std::move(else_node)) {}
 
     };
+
+    class Else : public AbstractElse
+    {
+    public:
+        unique_ptr<Procedure> procedure;
+        const char* nodeName() override { return "Else"; }
+        void display(DISP_ARGS) override;
+        Else(unique_ptr<Procedure> procedure) : procedure(std::move(procedure)) {}
+    };
+
+    class ElseIf : public AbstractElse
+    {
+    public:
+        unique_ptr<IfStatement> if_statement;
+        const char* nodeName() override { return "Else If"; }
+        void display(DISP_ARGS) override;
+        ElseIf(unique_ptr<IfStatement> if_statement) : if_statement(std::move(if_statement)) {}
+    };
+
 
     class WhileStatement : public Statement
     {
