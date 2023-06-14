@@ -148,114 +148,127 @@
 
 %%
 
-program : /*Empty*/ { if(program == nullptr) program = make_unique<Program>(); }
-        | program statement { program->statements.emplace_back($2); }
-        ;
+program 
+: /*Empty*/ { if(program == nullptr) program = make_unique<Program>(); }
+| program statement { program->statements.emplace_back($2); }
+;
 
-identifier : IDENTIFIER { $$ = new Identifier(*$1); delete $1; }
-           ;
+identifier 
+: IDENTIFIER { $$ = new Identifier(*$1); delete $1; }
+;
 
-type : identifier { $$ = $1; }
-     ;
+type 
+: identifier { $$ = $1; }
+;
 
 
 // Declarations
-term_decl : KEY_VARIABLE type KEY_NAMED identifier { $$ = new TermDecl(unique_ptr<Identifier>($4), unique_ptr<Expression>($2)); }
-          | KEY_VARIABLE type KEY_NAMED identifier KEY_ASSIGNED expression { $$ = new TermDecl(unique_ptr<Identifier>($4), unique_ptr<Expression>($2), unique_ptr<Expression>($6), false); }
-          | KEY_CONSTANT type KEY_NAMED identifier KEY_ASSIGNED expression { $$ = new TermDecl(unique_ptr<Identifier>($4), unique_ptr<Expression>($2), unique_ptr<Expression>($6), true); }
-          ;
+term_decl 
+: KEY_VARIABLE type KEY_NAMED identifier { $$ = new TermDecl(unique_ptr<Identifier>($4), unique_ptr<Expression>($2)); }
+| KEY_VARIABLE type KEY_NAMED identifier KEY_ASSIGNED expression { $$ = new TermDecl(unique_ptr<Identifier>($4), unique_ptr<Expression>($2), unique_ptr<Expression>($6), false); }
+| KEY_CONSTANT type KEY_NAMED identifier KEY_ASSIGNED expression { $$ = new TermDecl(unique_ptr<Identifier>($4), unique_ptr<Expression>($2), unique_ptr<Expression>($6), true); }
+;
 
-function_decl : function_decl_rec procedure { $$->procedure = unique_ptr<Procedure>($2); }
-              ;
+function_decl 
+: function_decl_rec procedure { $$->procedure = unique_ptr<Procedure>($2); }
+;
 
-function_decl_rec : KEY_FUNCTION { $$ = new FunctionDecl(); } 
-                  | function_decl_rec KEY_RETURNING type { $$->return_type = unique_ptr<Expression>($3); }
-                  | function_decl_rec KEY_NAMED identifier { $$->func_name = unique_ptr<Identifier>($3); }
-                  | function_decl_params_rec KEY_END { $$ = $1; }
-                  // Error Handling
-                  | function_decl_rec KEY_RETURNING error { printerr("Expected return type afer 'returning' in function declaration"); $$->return_type = unique_ptr<Expression>(ERROR_VAL); yyerrok; }
-                  | function_decl_rec KEY_NAMED error { printerr("Expected identifier after 'named' in function declaration"); $$->func_name = unique_ptr<Identifier>(ERROR_VAL); yyerrok; }
-                  ;
+function_decl_rec 
+: KEY_FUNCTION { $$ = new FunctionDecl(); } 
+| function_decl_rec KEY_NAMED identifier { $$->func_name = unique_ptr<Identifier>($3); }
+| function_decl_params_rec KEY_END { $$ = $1; }
+// Error Handling
+| function_decl_rec KEY_RETURNING error { printerr("Expected return type afer 'returning' in function declaration"); $$->return_type = unique_ptr<Expression>(ERROR_VAL); yyerrok; }
+| function_decl_rec KEY_NAMED error { printerr("Expected identifier after 'named' in function declaration"); $$->func_name = unique_ptr<Identifier>(ERROR_VAL); yyerrok; }
+;
 
-function_decl_params_rec : function_decl_rec KEY_PARAMETERS term_decl 
-                        { 
-                            $$ = $1; 
-                            if($$->params == nullptr) 
-                                $$->params = make_unique<ParamsDecl>(); 
-                            $$->params->list.emplace_back($3); 
-                        }
-                        | function_decl_params_rec DIV_COMMA term_decl { $$->params->list.emplace_back($3); }
-                        | function_decl_params_rec DIV_COMMA {}
-                        // Error Handling
-                        | function_decl_params_rec DIV_COMMA error { $$->params->list.emplace_back(ERROR_VAL); yyerrok; }
-                        ;
+function_decl_params_rec 
+: function_decl_rec KEY_PARAMETERS term_decl 
+{ 
+    $$ = $1; 
+    if($$->params == nullptr) 
+    $$->params = make_unique<ParamsDecl>(); 
+    $$->params->list.emplace_back($3); 
+}
+| function_decl_params_rec DIV_COMMA term_decl { $$->params->list.emplace_back($3); }
+| function_decl_params_rec DIV_COMMA {}
+// Error Handling
+| function_decl_params_rec DIV_COMMA error { $$->params->list.emplace_back(ERROR_VAL); yyerrok; }
+;
 
 // Expressions
-call_rec : KEY_CALL identifier KEY_PARAMETERS expression { $$ = new Call(unique_ptr<Identifier>($2), make_unique<CallArgs>()); }
-         | call_rec DIV_COMMA expression { $$->args->list.emplace_back($3); }
-         ;
+call_rec 
+: KEY_CALL identifier KEY_PARAMETERS expression { $$ = new Call(unique_ptr<Identifier>($2), make_unique<CallArgs>()); }
+| call_rec DIV_COMMA expression { $$->args->list.emplace_back($3); }
+;
 
-call : KEY_CALL identifier { $$ = new Call(unique_ptr<Identifier>($2)); }
-     | call_rec KEY_END { $$ = $1; }
-     ;
-
-
-expression : /*Empty*/ { $$ = nullptr; }
-           // Brackets
-           | DIV_OPEN_PAREN expression DIV_CLOSE_PAREN { $$ = $2; }
-           | DIV_OPEN_BRACE expression DIV_CLOSE_BRACE { $$ = $2; }
-           | DIV_OPEN_BRACKET expression DIV_CLOSE_BRACKET { $$ = $2; }
-           // Operations
-           | expression OP_PLUS expression { $$ = new BinaryOperation(unique_ptr<Expression>($1), unique_ptr<Expression>($3), BinaryOperation::Operator::PLUS); }
-           | expression OP_MINUS expression { $$ = new BinaryOperation(unique_ptr<Expression>($1), unique_ptr<Expression>($3), BinaryOperation::Operator::MINUS); }
-           | expression OP_MULT expression { $$ = new BinaryOperation(unique_ptr<Expression>($1), unique_ptr<Expression>($3), BinaryOperation::Operator::MULTIPLY); }
-           | expression OP_DIV expression { $$ = new BinaryOperation(unique_ptr<Expression>($1), unique_ptr<Expression>($3), BinaryOperation::Operator::DIVIDE); }
-           | expression OP_POWER expression { $$ = new BinaryOperation(unique_ptr<Expression>($1), unique_ptr<Expression>($3), BinaryOperation::Operator::POWER); }
-           | expression OP_PERCENT expression { $$ = new BinaryOperation(unique_ptr<Expression>($1), unique_ptr<Expression>($3), BinaryOperation::Operator::MODULO); }
-           | expression OP_EQUAL expression { $$ = new BinaryOperation(unique_ptr<Expression>($1), unique_ptr<Expression>($3), BinaryOperation::Operator::EQUAL); }
-           | expression OP_NOT_EQUAL expression { $$ = new BinaryOperation(unique_ptr<Expression>($1), unique_ptr<Expression>($3), BinaryOperation::Operator::NOT_EQUAL); }
-           | expression OP_LESS expression { $$ = new BinaryOperation(unique_ptr<Expression>($1), unique_ptr<Expression>($3), BinaryOperation::Operator::LESS); }
-           | expression OP_LESS_EQUAL expression { $$ = new BinaryOperation(unique_ptr<Expression>($1), unique_ptr<Expression>($3), BinaryOperation::Operator::LESS_EQUAL); }
-           | expression OP_GREATER expression { $$ = new BinaryOperation(unique_ptr<Expression>($1), unique_ptr<Expression>($3), BinaryOperation::Operator::GREATER); }
-           | expression OP_GREATER_EQUAL expression { $$ = new BinaryOperation(unique_ptr<Expression>($1), unique_ptr<Expression>($3), BinaryOperation::Operator::GREATER_EQUAL); }
-           | expression OP_AND expression { $$ = new BinaryOperation(unique_ptr<Expression>($1), unique_ptr<Expression>($3), BinaryOperation::Operator::AND); }
-           | expression OP_OR expression { $$ = new BinaryOperation(unique_ptr<Expression>($1), unique_ptr<Expression>($3), BinaryOperation::Operator::OR); }
-           | OP_MINUS expression { $$ = new UnaryOperation(unique_ptr<Expression>($2), UnaryOperation::Operator::NEGATIVE); }
-           | OP_NOT expression { $$ = new UnaryOperation(unique_ptr<Expression>($2), UnaryOperation::Operator::NOT); }
-           | OP_INCREMENT expression { $$ = new UnaryOperation(unique_ptr<Expression>($2), UnaryOperation::Operator::PRE_INC); }
-           | OP_DECREMENT expression { $$ = new UnaryOperation(unique_ptr<Expression>($2), UnaryOperation::Operator::PRE_DEC); }
-           | expression OP_INCREMENT { $$ = new UnaryOperation(unique_ptr<Expression>($1), UnaryOperation::Operator::POST_INC); }
-           | expression OP_DECREMENT { $$ = new UnaryOperation(unique_ptr<Expression>($1), UnaryOperation::Operator::POST_DEC); }
-           // Literals
-           | LIT_INT { $$ = new IntegerLiteral($1); }
-           | LIT_FLOAT { $$ = new FloatLiteral($1); }
-           | LIT_STRING { $$ = new StringLiteral(*$1); delete $1; }
-           // Identifiers
-           | identifier { $$ = $1; }
-           // Function call
-           | call { $$ = $1; }
-           // Error Handling
-           | DIV_OPEN_PAREN error DIV_CLOSE_PAREN { $$ = ERROR_VAL; yyerrok; }
-           | DIV_OPEN_BRACE error DIV_CLOSE_BRACE { $$ = ERROR_VAL; yyerrok; }
-           | DIV_OPEN_BRACKET error DIV_CLOSE_BRACKET { $$ = ERROR_VAL; yyerrok; }
-           ;
-
-statement : DIV_TERMINATOR { $$ = nullptr; }
-          | expression DIV_TERMINATOR { $$ = $1; }
-          | term_decl DIV_TERMINATOR { $$ = $1; }
-          | function_decl { $$ = $1; }
-          | function_decl DIV_TERMINATOR { $$ = $1; }
-          | error DIV_TERMINATOR { $$ = ERROR_VAL; yyerrok; }
-          ;
-
-procedure_rec : KEY_PROCEDURE { $$ = new Procedure(); }
-              | procedure_rec statement { $$->statements.emplace_back($2); }
-              ;
+call 
+: KEY_CALL identifier { $$ = new Call(unique_ptr<Identifier>($2)); }
+| call_rec KEY_END { $$ = $1; }
+;
 
 
+expression 
+: /*Empty*/ { $$ = nullptr; }
+// Brackets
+| DIV_OPEN_PAREN expression DIV_CLOSE_PAREN { $$ = $2; }
+| DIV_OPEN_BRACE expression DIV_CLOSE_BRACE { $$ = $2; }
+| DIV_OPEN_BRACKET expression DIV_CLOSE_BRACKET { $$ = $2; }
+// Operations
+| expression OP_PLUS expression { $$ = new BinaryOperation(unique_ptr<Expression>($1), unique_ptr<Expression>($3), BinaryOperation::Operator::PLUS); }
+| expression OP_MINUS expression { $$ = new BinaryOperation(unique_ptr<Expression>($1), unique_ptr<Expression>($3), BinaryOperation::Operator::MINUS); }
+| expression OP_MULT expression { $$ = new BinaryOperation(unique_ptr<Expression>($1), unique_ptr<Expression>($3), BinaryOperation::Operator::MULTIPLY); }
+| expression OP_DIV expression { $$ = new BinaryOperation(unique_ptr<Expression>($1), unique_ptr<Expression>($3), BinaryOperation::Operator::DIVIDE); }
+| expression OP_POWER expression { $$ = new BinaryOperation(unique_ptr<Expression>($1), unique_ptr<Expression>($3), BinaryOperation::Operator::POWER); }
+| expression OP_PERCENT expression { $$ = new BinaryOperation(unique_ptr<Expression>($1), unique_ptr<Expression>($3), BinaryOperation::Operator::MODULO); }
+| expression OP_EQUAL expression { $$ = new BinaryOperation(unique_ptr<Expression>($1), unique_ptr<Expression>($3), BinaryOperation::Operator::EQUAL); }
+| expression OP_NOT_EQUAL expression { $$ = new BinaryOperation(unique_ptr<Expression>($1), unique_ptr<Expression>($3), BinaryOperation::Operator::NOT_EQUAL); }
+| expression OP_LESS expression { $$ = new BinaryOperation(unique_ptr<Expression>($1), unique_ptr<Expression>($3), BinaryOperation::Operator::LESS); }
+| expression OP_LESS_EQUAL expression { $$ = new BinaryOperation(unique_ptr<Expression>($1), unique_ptr<Expression>($3), BinaryOperation::Operator::LESS_EQUAL); }
+| expression OP_GREATER expression { $$ = new BinaryOperation(unique_ptr<Expression>($1), unique_ptr<Expression>($3), BinaryOperation::Operator::GREATER); }
+| expression OP_GREATER_EQUAL expression { $$ = new BinaryOperation(unique_ptr<Expression>($1), unique_ptr<Expression>($3), BinaryOperation::Operator::GREATER_EQUAL); }
+| expression OP_AND expression { $$ = new BinaryOperation(unique_ptr<Expression>($1), unique_ptr<Expression>($3), BinaryOperation::Operator::AND); }
+| expression OP_OR expression { $$ = new BinaryOperation(unique_ptr<Expression>($1), unique_ptr<Expression>($3), BinaryOperation::Operator::OR); }
+| OP_MINUS expression { $$ = new UnaryOperation(unique_ptr<Expression>($2), UnaryOperation::Operator::NEGATIVE); }
+| OP_NOT expression { $$ = new UnaryOperation(unique_ptr<Expression>($2), UnaryOperation::Operator::NOT); }
+| OP_INCREMENT expression { $$ = new UnaryOperation(unique_ptr<Expression>($2), UnaryOperation::Operator::PRE_INC); }
+| OP_DECREMENT expression { $$ = new UnaryOperation(unique_ptr<Expression>($2), UnaryOperation::Operator::PRE_DEC); }
+| expression OP_INCREMENT { $$ = new UnaryOperation(unique_ptr<Expression>($1), UnaryOperation::Operator::POST_INC); }
+| expression OP_DECREMENT { $$ = new UnaryOperation(unique_ptr<Expression>($1), UnaryOperation::Operator::POST_DEC); }
+// Literals
+| LIT_INT { $$ = new IntegerLiteral($1); }
+| LIT_FLOAT { $$ = new FloatLiteral($1); }
+| LIT_STRING { $$ = new StringLiteral(*$1); delete $1; }
+// Identifiers
+| identifier { $$ = $1; }
+// Function call
+| call { $$ = $1; }
+// Error Handling
+| DIV_OPEN_PAREN error DIV_CLOSE_PAREN { $$ = ERROR_VAL; yyerrok; }
+| DIV_OPEN_BRACE error DIV_CLOSE_BRACE { $$ = ERROR_VAL; yyerrok; }
+| DIV_OPEN_BRACKET error DIV_CLOSE_BRACKET { $$ = ERROR_VAL; yyerrok; }
+;
 
-procedure : procedure_rec KEY_END { $$ = $1; }
-          ;
+
+statement 
+: DIV_TERMINATOR { $$ = nullptr; }
+| expression DIV_TERMINATOR { $$ = $1; }
+| term_decl DIV_TERMINATOR { $$ = $1; }
+| function_decl { $$ = $1; }
+| function_decl DIV_TERMINATOR { $$ = $1; }
+| error DIV_TERMINATOR { $$ = ERROR_VAL; yyerrok; }
+;
+
+procedure_rec 
+: KEY_PROCEDURE { $$ = new Procedure(); }
+| procedure_rec statement { $$->statements.emplace_back($2); }
+;
+
+
+
+procedure 
+: procedure_rec KEY_END { $$ = $1; }
+;
 
 
 
