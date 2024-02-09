@@ -1,0 +1,8 @@
+// Testing of while and if statements (if without else)
+while a < 10
+procedure
+    if not bool_v or abcd < 115 and cool != 0
+    procedure
+        x++.
+    end 
+end

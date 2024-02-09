@@ -1,0 +1,21 @@
+
+if pancakes or waffles
+procedure
+    call println parameters "Make batter" end.
+end else
+procedure
+    call println parameters "No one's hungry, I guess..." end.
+end
+
+if something
+procedure
+    call println parameters "Make batter" end.
+end else if anything
+procedure
+    call println parameters "No one's hungry, I guess..." end.
+end else
+procedure
+    assign x value 15.
+end
+
+//

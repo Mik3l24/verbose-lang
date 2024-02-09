@@ -1,0 +1,74 @@
+Program
+statement:
+  Function Declaration
+  func_name:
+    Identifier
+    name: func
+  return_type:
+    Identifier
+    name: Int
+  params:
+    Parameter Declaration
+    parameter:
+      Term Declaration
+      term_name:
+        Identifier
+        name: x
+      is_const: 0
+      assigned_value: none
+    parameter:
+      Term Declaration
+      term_name:
+        Identifier
+        name: y
+      is_const: 0
+      assigned_value: none
+    parameter:
+      Term Declaration
+      term_name:
+        Identifier
+        name: z
+      is_const: 0
+      assigned_value: none
+  procedure:
+    Procedure
+    statement:
+      Term Declaration
+      term_name:
+        Identifier
+        name: ca
+      is_const: 1
+      assigned_value:
+        Integer Literal
+        value: 15
+    statement:
+      Term Declaration
+      term_name:
+        Identifier
+        name: cb
+      is_const: 1
+      assigned_value:
+        Float Literal
+        value: 15
+    statement:
+      Term Declaration
+      term_name:
+        Identifier
+        name: cc
+      is_const: 1
+      assigned_value:
+        String Literal
+        value: cool
+    statement:
+      Call
+      callable:
+        Identifier
+        name: print
+      args:
+        Call Arguments
+        arg:
+          Identifier
+          name: y
+        arg:
+          Identifier
+          name: z

@@ -3,17 +3,43 @@
 #include <iostream>
 #include <string>
 
-// List of possible tokens
-#include "../src/tokens.h"
+#define VERBOSE_PARSER_MODE
+#ifdef VERBOSE_PARSER_MODE
+#include "parser.hpp"
+#define YY_EXTERN_C extern "C"
+
+
 
 // Print for debugging
 #define vprint(text) {std::cout << text << '\n';}
 // Macro that signifies a token has been found, to be replaced with returns for Bison
-#define ret(token) {std::cout << "Found token " << #token << std::endl;}
+#define ret(token) {return token;}
 // Macro that signifies a token with an assigned value has been found
-#define retv(token,val) {std::cout << "Found token " << #token << " Value " << val << std::endl;}
+#define retv(token,val,type) \
+{\
+    yylval.type = val;\
+    return token;\
+}
+
+#define retp(token,val,type) \
+{\
+    yylval.type = new val;\
+    return token;\
+}
 
 #define err(what) {std::cerr << what << '\n';}
+#else 
+// Print for debugging
+#define vprint(text) {std::cout << text << '\n';}
+// Macro that signifies a token has been found
+#define ret(token) {std::cout << "Found token " << #token << '\n';}
+// Macro that signifies a token with an assigned value has been found
+#define retv(token,val,type) {std::cout << "Found token " << #token << " Value " << val << '\n';}
+
+#define retp(token,val,type) {std::cout << "Found token " << #token << " Value " << val << '\n';}
+
+#define err(what) {std::cerr << what << '\n';}
+#endif
 %}
 
 %class{
@@ -71,7 +97,7 @@ IDENTIFIER_CHARS [\p{Alnum}_]
     pop_state();
     std::string return_str = literal_str;
     literal_str.clear();
-    retv(LIT_STRING, return_str);
+    retp(LIT_STRING, std::string(return_str), string);
 }
 <IN_STRING_LITERAL><<EOF>> {err("Lexical Error: String literal not closed");}
 
@@ -79,13 +105,13 @@ IDENTIFIER_CHARS [\p{Alnum}_]
 
 /*-float- //at least 1 digit after the decimal point is required 
           so it is not mistaken for the instruction terminator */
-(\d+).(\d+)(?:f?){AFTER_ALNUM} {retv(LIT_FLOAT, std::stod(text()))}
+(\d+).(\d+)(?:f?){AFTER_ALNUM} {retv(LIT_FLOAT, std::stod(text()), floatv)}
 /*-bin int- // not working*/
-(?:0[bB])[10]+{AFTER_ALNUM} {retv(LIT_INT, std::stoi(text(), nullptr, 2))}
+(?:0[bB])[10]+{AFTER_ALNUM} {retv(LIT_INT, std::stoi(text(), nullptr, 2), intv)}
 /*-hex int- // not working*/
-0[xX][ABCDEFabcdef\d]+{AFTER_ALNUM} {retv(LIT_INT, std::stoi(text()))}
+0[xX][ABCDEFabcdef\d]+{AFTER_ALNUM} {retv(LIT_INT, std::stoi(text()), intv)}
 /*-int- //no unary minus atm */
-(\d+){AFTER_ALNUM} {retv(LIT_INT, std::stoi(text()))}
+(\d+){AFTER_ALNUM} {retv(LIT_INT, std::stoi(text()), intv)}
 
 
 /* Keyword section    */
@@ -106,10 +132,9 @@ IDENTIFIER_CHARS [\p{Alnum}_]
 "arguments"{AFTER_ALNUM} {ret(KEY_ARGUMENTS)}
 "assigned"{AFTER_ALNUM} {ret(KEY_ASSIGNED)}
 "assign"{AFTER_ALNUM} {ret(KEY_ASSIGN)}
-"print"{AFTER_ALNUM} {ret(KEY_PRINT)}
 "call"{AFTER_ALNUM} {ret(KEY_CALL)}
-"read"{AFTER_ALNUM} {ret(KEY_READ)}
 "if"{AFTER_ALNUM} {ret(KEY_IF)}
+"else"{AFTER_ALNUM} {ret(KEY_ELSE)}
 "while"{AFTER_ALNUM} {ret(KEY_WHILE)}
 "size"{AFTER_ALNUM} {ret(KEY_SIZE)}
 "by"{AFTER_ALNUM} {ret(KEY_BY)}
@@ -117,6 +142,7 @@ IDENTIFIER_CHARS [\p{Alnum}_]
 "at"{AFTER_ALNUM} {ret(KEY_AT)}
 "values"{AFTER_ALNUM} {ret(KEY_VALUES)}
 "value"{AFTER_ALNUM} {ret(KEY_VALUE)}
+
 
 
 
@@ -151,7 +177,7 @@ IDENTIFIER_CHARS [\p{Alnum}_]
 
 
 /* Identifiers section */
-{IDENTIFIER_CHARS}+{AFTER_ALNUM} {retv(IDENTIFIER, text())}
+{IDENTIFIER_CHARS}+{AFTER_ALNUM} {retp(IDENTIFIER, std::string(text()), string)}
 
 
 /* testing/utility */
